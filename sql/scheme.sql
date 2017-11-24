@@ -1,0 +1,91 @@
+-- Adminer 4.3.1 PostgreSQL dump
+
+DROP TABLE IF EXISTS "DEPARTMENT";
+CREATE SEQUENCE "DEPARTMENT_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."DEPARTMENT" (
+    "ID" integer DEFAULT nextval('"DEPARTMENT_ID_seq"') NOT NULL,
+    "NAME" character varying,
+    CONSTRAINT "DEPARTMENT_ID" PRIMARY KEY ("ID"),
+    CONSTRAINT "DEPARTMENT_Name" UNIQUE ("NAME")
+) WITH (oids = false);
+
+
+DROP TABLE IF EXISTS "MODEL";
+CREATE SEQUENCE "MODEL_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."MODEL" (
+    "ID" integer DEFAULT nextval('"MODEL_ID_seq"') NOT NULL,
+    "NAME" character varying(50) NOT NULL,
+    "CTYPE" integer NOT NULL,
+    CONSTRAINT "MODEL_ID" PRIMARY KEY ("ID"),
+    CONSTRAINT "MODEL_CTYPE_fkey" FOREIGN KEY ("CTYPE") REFERENCES "CARTYPE"("ID") NOT DEFERRABLE
+) WITH (oids = false);
+
+
+DROP TABLE IF EXISTS "CARTYPE";
+CREATE SEQUENCE "CARTYPE_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."CARTYPE" (
+    "ID" integer DEFAULT nextval('"CARTYPE_ID_seq"') NOT NULL,
+    "NAME" character varying(30) NOT NULL,
+    "CODE" character varying(30) NOT NULL,
+    CONSTRAINT "CARTYPE_CODE" UNIQUE ("CODE"),
+    CONSTRAINT "CARTYPE_ID" PRIMARY KEY ("ID"),
+    CONSTRAINT "CARTYPE_NAME" UNIQUE ("NAME")
+) WITH (oids = false);
+
+COMMENT ON TABLE "public"."CARTYPE" IS 'Типы ТС';
+
+
+DROP TABLE IF EXISTS "AGENT";
+CREATE SEQUENCE "AGENT_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."AGENT" (
+    "ID" integer DEFAULT nextval('"AGENT_ID_seq"') NOT NULL,
+    "NAME" character varying NOT NULL,
+    "FAMILY" character varying NOT NULL,
+    "MIDDLENAME" character varying,
+    "CODE" character varying NOT NULL,
+    CONSTRAINT "AGENT_CODE" UNIQUE ("CODE"),
+    CONSTRAINT "AGENT_ID" PRIMARY KEY ("ID")
+) WITH (oids = false);
+
+COMMENT ON COLUMN "public"."AGENT"."CODE" IS 'м.б. СНИЛС или др. для однозначной идентификации';
+
+
+DROP TABLE IF EXISTS "CAR";
+CREATE SEQUENCE "CAR_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."CAR" (
+    "ID" integer DEFAULT nextval('"CAR_ID_seq"') NOT NULL,
+    "MODEL" integer NOT NULL,
+    "REGNUM" character varying(20) DEFAULT  NOT NULL,
+    CONSTRAINT "CAR_ID" PRIMARY KEY ("ID")
+) WITH (oids = false);
+
+COMMENT ON TABLE "public"."CAR" IS 'Транспортные средства';
+
+COMMENT ON COLUMN "public"."CAR"."REGNUM" IS 'Рег. Номер';
+
+
+DROP TABLE IF EXISTS "CARGOODS";
+CREATE SEQUENCE "CARGOODS_ID_seq" INCREMENT  MINVALUE  MAXVALUE  START 1 CACHE ;
+
+CREATE TABLE "public"."CARGOODS" (
+    "ID" integer DEFAULT nextval('"CARGOODS_ID_seq"') NOT NULL,
+    "DEPT" integer NOT NULL,
+    "CAR" integer NOT NULL,
+    CONSTRAINT "CARGOODS_ID" PRIMARY KEY ("ID"),
+    CONSTRAINT "CARGOODS_CAR_fkey" FOREIGN KEY ("CAR") REFERENCES "CAR"("ID") NOT DEFERRABLE,
+    CONSTRAINT "CARGOODS_DEPT_fkey" FOREIGN KEY ("DEPT") REFERENCES "DEPARTMENT"("ID") NOT DEFERRABLE
+) WITH (oids = false);
+
+COMMENT ON TABLE "public"."CARGOODS" IS 'Наличие ТС в пунктах выдачи';
+
+COMMENT ON COLUMN "public"."CARGOODS"."DEPT" IS 'Подразделение';
+
+COMMENT ON COLUMN "public"."CARGOODS"."CAR" IS 'ТС';
+
+
+-- 2017-11-24 10:42:41.16588+00
