@@ -1,0 +1,650 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.1
+-- Dumped by pg_dump version 10.1
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: increment(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION increment(i integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+      RETURN i + 1;
+    END;
+    $$;
+
+
+ALTER FUNCTION public.increment(i integer) OWNER TO postgres;
+
+--
+-- Name: AGENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "AGENT_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "AGENT_ID_seq" OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: AGENT; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "AGENT" (
+    "ID" integer DEFAULT nextval('"AGENT_ID_seq"'::regclass) NOT NULL,
+    "NAME" character varying NOT NULL,
+    "FAMILY" character varying NOT NULL,
+    "MIDDLENAME" character varying,
+    "CODE" character varying NOT NULL
+);
+
+
+ALTER TABLE "AGENT" OWNER TO postgres;
+
+--
+-- Name: COLUMN "AGENT"."CODE"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "AGENT"."CODE" IS 'м.б. СНИЛС или др. для однозначной идентификации';
+
+
+--
+-- Name: CAR_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "CAR_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "CAR_ID_seq" OWNER TO postgres;
+
+--
+-- Name: CAR; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "CAR" (
+    "ID" integer DEFAULT nextval('"CAR_ID_seq"'::regclass) NOT NULL,
+    "MODEL" integer NOT NULL,
+    "REGNUM" character varying(20) NOT NULL
+);
+
+
+ALTER TABLE "CAR" OWNER TO postgres;
+
+--
+-- Name: TABLE "CAR"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE "CAR" IS 'Транспортные средства';
+
+
+--
+-- Name: COLUMN "CAR"."REGNUM"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "CAR"."REGNUM" IS 'Рег. Номер';
+
+
+--
+-- Name: CARGOODS_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "CARGOODS_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "CARGOODS_ID_seq" OWNER TO postgres;
+
+--
+-- Name: CARGOODS; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "CARGOODS" (
+    "ID" integer DEFAULT nextval('"CARGOODS_ID_seq"'::regclass) NOT NULL,
+    "DEPT" integer NOT NULL,
+    "CAR" integer NOT NULL
+);
+
+
+ALTER TABLE "CARGOODS" OWNER TO postgres;
+
+--
+-- Name: TABLE "CARGOODS"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE "CARGOODS" IS 'Наличие ТС в пунктах выдачи';
+
+
+--
+-- Name: COLUMN "CARGOODS"."DEPT"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "CARGOODS"."DEPT" IS 'Подразделение';
+
+
+--
+-- Name: COLUMN "CARGOODS"."CAR"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "CARGOODS"."CAR" IS 'ТС';
+
+
+--
+-- Name: CARTYPE_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "CARTYPE_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "CARTYPE_ID_seq" OWNER TO postgres;
+
+--
+-- Name: CARTYPE; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "CARTYPE" (
+    "ID" integer DEFAULT nextval('"CARTYPE_ID_seq"'::regclass) NOT NULL,
+    "NAME" character varying(30) NOT NULL,
+    "CODE" character varying(30) NOT NULL
+);
+
+
+ALTER TABLE "CARTYPE" OWNER TO postgres;
+
+--
+-- Name: TABLE "CARTYPE"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE "CARTYPE" IS 'Типы ТС';
+
+
+--
+-- Name: DEPARTMENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "DEPARTMENT_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "DEPARTMENT_ID_seq" OWNER TO postgres;
+
+--
+-- Name: DEPARTMENT; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "DEPARTMENT" (
+    "ID" integer DEFAULT nextval('"DEPARTMENT_ID_seq"'::regclass) NOT NULL,
+    "NAME" character varying NOT NULL
+);
+
+
+ALTER TABLE "DEPARTMENT" OWNER TO postgres;
+
+--
+-- Name: LOCATION; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "LOCATION" (
+    "ID" integer NOT NULL,
+    "TS" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "CAR" integer NOT NULL,
+    "POINT" point NOT NULL
+);
+
+
+ALTER TABLE "LOCATION" OWNER TO postgres;
+
+--
+-- Name: COLUMN "LOCATION"."TS"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "LOCATION"."TS" IS 'Дата Время';
+
+
+--
+-- Name: COLUMN "LOCATION"."POINT"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "LOCATION"."POINT" IS 'Координаты';
+
+
+--
+-- Name: LOCATION_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "LOCATION_ID_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "LOCATION_ID_seq" OWNER TO postgres;
+
+--
+-- Name: LOCATION_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE "LOCATION_ID_seq" OWNED BY "LOCATION"."ID";
+
+
+--
+-- Name: MODEL_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "MODEL_ID_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "MODEL_ID_seq" OWNER TO postgres;
+
+--
+-- Name: MODEL; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "MODEL" (
+    "ID" integer DEFAULT nextval('"MODEL_ID_seq"'::regclass) NOT NULL,
+    "NAME" character varying(50) NOT NULL,
+    "CTYPE" integer NOT NULL
+);
+
+
+ALTER TABLE "MODEL" OWNER TO postgres;
+
+--
+-- Name: RENTAL; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "RENTAL" (
+    "ID" integer NOT NULL,
+    "CAR" integer NOT NULL,
+    "TS" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "TSWORK" timestamp without time zone NOT NULL,
+    "OPER" smallint DEFAULT '0'::smallint NOT NULL,
+    "DEPT" integer NOT NULL,
+    "AGENT" integer NOT NULL,
+    CONSTRAINT checkoper CHECK (("OPER" = ANY (ARRAY[0, 1])))
+);
+
+
+ALTER TABLE "RENTAL" OWNER TO postgres;
+
+--
+-- Name: RENTAL_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "RENTAL_ID_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "RENTAL_ID_seq" OWNER TO postgres;
+
+--
+-- Name: RENTAL_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE "RENTAL_ID_seq" OWNED BY "RENTAL"."ID";
+
+
+--
+-- Name: LOCATION ID; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "LOCATION" ALTER COLUMN "ID" SET DEFAULT nextval('"LOCATION_ID_seq"'::regclass);
+
+
+--
+-- Name: RENTAL ID; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTAL" ALTER COLUMN "ID" SET DEFAULT nextval('"RENTAL_ID_seq"'::regclass);
+
+
+--
+-- Data for Name: AGENT; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "AGENT" ("ID", "NAME", "FAMILY", "MIDDLENAME", "CODE") FROM stdin;
+\.
+
+
+--
+-- Data for Name: CAR; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "CAR" ("ID", "MODEL", "REGNUM") FROM stdin;
+\.
+
+
+--
+-- Data for Name: CARGOODS; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "CARGOODS" ("ID", "DEPT", "CAR") FROM stdin;
+\.
+
+
+--
+-- Data for Name: CARTYPE; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "CARTYPE" ("ID", "NAME", "CODE") FROM stdin;
+\.
+
+
+--
+-- Data for Name: DEPARTMENT; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "DEPARTMENT" ("ID", "NAME") FROM stdin;
+\.
+
+
+--
+-- Data for Name: LOCATION; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "LOCATION" ("ID", "TS", "CAR", "POINT") FROM stdin;
+\.
+
+
+--
+-- Data for Name: MODEL; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "MODEL" ("ID", "NAME", "CTYPE") FROM stdin;
+\.
+
+
+--
+-- Data for Name: RENTAL; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT") FROM stdin;
+\.
+
+
+--
+-- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 1, false);
+
+
+--
+-- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 1, false);
+
+
+--
+-- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 1, false);
+
+
+--
+-- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"CAR_ID_seq"', 1, false);
+
+
+--
+-- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 1, false);
+
+
+--
+-- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1, false);
+
+
+--
+-- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 1, false);
+
+
+--
+-- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1, false);
+
+
+--
+-- Name: AGENT AGENT_CODE; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "AGENT"
+    ADD CONSTRAINT "AGENT_CODE" UNIQUE ("CODE");
+
+
+--
+-- Name: AGENT AGENT_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "AGENT"
+    ADD CONSTRAINT "AGENT_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: CARGOODS CARGOODS_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARGOODS"
+    ADD CONSTRAINT "CARGOODS_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: CARTYPE CARTYPE_CODE; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARTYPE"
+    ADD CONSTRAINT "CARTYPE_CODE" UNIQUE ("CODE");
+
+
+--
+-- Name: CARTYPE CARTYPE_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARTYPE"
+    ADD CONSTRAINT "CARTYPE_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: CARTYPE CARTYPE_NAME; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARTYPE"
+    ADD CONSTRAINT "CARTYPE_NAME" UNIQUE ("NAME");
+
+
+--
+-- Name: CAR CAR_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CAR"
+    ADD CONSTRAINT "CAR_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: DEPARTMENT DEPARTMENT_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "DEPARTMENT"
+    ADD CONSTRAINT "DEPARTMENT_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: DEPARTMENT DEPARTMENT_Name; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "DEPARTMENT"
+    ADD CONSTRAINT "DEPARTMENT_Name" UNIQUE ("NAME");
+
+
+--
+-- Name: MODEL MODEL_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "MODEL"
+    ADD CONSTRAINT "MODEL_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: RENTAL RENTAL_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTAL"
+    ADD CONSTRAINT "RENTAL_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: cargoods_car_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX cargoods_car_idx ON "CARGOODS" USING btree ("CAR");
+
+
+--
+-- Name: LOCATION LOCATION_CAR_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "LOCATION"
+    ADD CONSTRAINT "LOCATION_CAR_fkey" FOREIGN KEY ("CAR") REFERENCES "CAR"("ID");
+
+
+--
+-- Name: MODEL MODEL_CTYPE_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "MODEL"
+    ADD CONSTRAINT "MODEL_CTYPE_fkey" FOREIGN KEY ("CTYPE") REFERENCES "CARTYPE"("ID");
+
+
+--
+-- Name: RENTAL RENTAL_CAR_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTAL"
+    ADD CONSTRAINT "RENTAL_CAR_fkey" FOREIGN KEY ("CAR") REFERENCES "CAR"("ID");
+
+
+--
+-- Name: RENTAL RENTAL_DEPT_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTAL"
+    ADD CONSTRAINT "RENTAL_DEPT_fkey" FOREIGN KEY ("DEPT") REFERENCES "DEPARTMENT"("ID");
+
+
+--
+-- Name: CAR car_model_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CAR"
+    ADD CONSTRAINT car_model_fk FOREIGN KEY ("MODEL") REFERENCES "MODEL"("ID");
+
+
+--
+-- Name: CARGOODS cargoods_car_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARGOODS"
+    ADD CONSTRAINT cargoods_car_id_fk FOREIGN KEY ("CAR") REFERENCES "CAR"("ID");
+
+
+--
+-- Name: CARGOODS cargoods_department_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARGOODS"
+    ADD CONSTRAINT cargoods_department_id_fk FOREIGN KEY ("DEPT") REFERENCES "DEPARTMENT"("ID");
+
+
+--
+-- Name: RENTAL rental_agent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTAL"
+    ADD CONSTRAINT rental_agent_id_fk FOREIGN KEY ("AGENT") REFERENCES "AGENT"("ID");
+
+
+--
+-- PostgreSQL database dump complete
+--
+
