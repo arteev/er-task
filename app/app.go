@@ -19,7 +19,7 @@ func (a *App) init() {
 	a.db.Init(a.connectionString)
 	a.routes = mux.NewRouter()
 
-	a.routes.HandleFunc("/api/v1/tracking/{car}/{x}/{y}", a.Tracking).Methods("PUT")
+	a.routes.HandleFunc("/api/v1/tracking/{car}/{x}/{y}", ErrorHandler(a.Tracking)).Methods("PUT")
 	//.Methods("GET")
 	http.Handle("/", a.routes)
 

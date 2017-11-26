@@ -11,6 +11,7 @@ type Storage interface {
 	//Трекинг ТС по координатам GPS. Возможно нужна высота?
 	Track(model.Car, float64, float64) error
 
+	//Поиск ТС по ID
 	FindCarByID(id int) (*model.Car, error)
 }
 

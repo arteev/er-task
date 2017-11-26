@@ -99,8 +99,27 @@ func TestInitDonePg(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 }
+
+func TestFindCar(t *testing.T) {
+	s := setUp(t)
+	spg := s.(*storagePG)
+	defer s.Done()
+	defer clearData(spg, t)
+	_, err := s.FindCarByID(1)
+	if err == nil {
+		t.Error("Expected error")
+	}
+	car := addCar(spg, 1, t)
+	got, err := s.FindCarByID(car.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ID != car.ID {
+		t.Errorf("Expected car %v,got %v", car.ID, got.ID)
+	}
+}
+
 func TestTrackPg(t *testing.T) {
 	s := setUp(t)
 	spg := s.(*storagePG)

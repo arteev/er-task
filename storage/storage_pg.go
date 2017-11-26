@@ -10,14 +10,21 @@ import (
 )
 
 var (
-	sqlTrack  = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES($1,POINT($2,$3))`
-	sqlAddCar = `INSERT INTO "CAR"("ID","MODEL","REGNUM") VALUES ($1,$2,$3)`
+	sqlTrack    = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES($1,POINT($2,$3))`
+	sqlAddCar   = `INSERT INTO "CAR"("ID","MODEL","REGNUM") VALUES ($1,$2,$3)`
+	sqlFindByID = `SELECT c."ID", c."REGNUM", c."MODEL", m."NAME" "MODELNAME" FROM "CAR" c ,"MODEL" m
+	WHERE
+		c."MODEL" = m."ID"
+		and c."ID"=$1`
 )
 
+//TODO: refactor template Repository
+
 type storagePG struct {
-	db         *sql.DB
-	smttrac    *sql.Stmt
-	stmtAddCar *sql.Stmt
+	db              *sql.DB
+	smttrac         *sql.Stmt
+	stmtAddCar      *sql.Stmt
+	stmtFindCarByID *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string) error {
@@ -45,6 +52,11 @@ func (pg *storagePG) prepare() (err error) {
 	if err != nil {
 		return
 	}
+
+	pg.stmtFindCarByID, err = pg.db.Prepare(sqlFindByID)
+	if err != nil {
+		return
+	}
 	return nil
 }
 
@@ -53,9 +65,30 @@ func (pg *storagePG) Track(car model.Car, latitude float64, longitude float64) e
 	return err
 }
 
-//TODO: find car by id
+//TODO: refactor this. REPO
 func (pg *storagePG) FindCarByID(id int) (*model.Car, error) {
-	return nil, fmt.Errorf("Car %v not found", id)
+	row := pg.stmtFindCarByID.QueryRow(id)
+	var (
+		idc            sql.NullInt64
+		idmodel        sql.NullInt64
+		regnum, smodel string
+	)
+	err := row.Scan(&idc, &regnum, &idmodel, &smodel)
+	if err != nil {
+		return nil, err
+	}
+	if !idc.Valid {
+		return nil, fmt.Errorf("Car %v not found", id)
+	}
+	car := &model.Car{
+		ID:     int(idc.Int64),
+		Regnum: regnum,
+		Model: model.ModelCar{
+			ID:   int(idmodel.Int64),
+			Name: smodel,
+		},
+	}
+	return car, err
 }
 
 func (pg *storagePG) addcar(car model.Car) error {

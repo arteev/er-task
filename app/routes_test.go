@@ -1,7 +1,10 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -11,17 +14,6 @@ import (
 	"github.com/arteev/er-task/storage"
 )
 
-/*
-type Storage interface {
-	Init(string) error
-	Done() error
-
-	//Трекинг ТС по координатам GPS. Возможно нужна высота?
-	Track(model.Car, float64, float64) error
-
-	FindCarByID(id int) (model.Car, error)
-}
-*/
 type FakeStorage struct {
 	sync.RWMutex
 	cars map[int]model.Car
@@ -69,6 +61,47 @@ func assertCodeEqual(t *testing.T, text string, want, got int) {
 	}
 }
 
+//TODO: refactor this: helper package
+type response struct {
+	Message string `json:"message"`
+	Error   string `json:"error"`
+}
+
+func json2response(r io.Reader) (*response, error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	val := response{}
+	err = json.Unmarshal(b, &val)
+	if err != nil {
+		return nil, err
+	}
+	return &val, nil
+}
+
+func checkResponseJSONError(t *testing.T, r io.Reader, want string) {
+	val, err := json2response(r)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if val.Error != want {
+		t.Errorf("Expected %q, got %q", want, val.Error)
+	}
+}
+
+func checkResponseJSONMessage(t *testing.T, r io.Reader, want string) {
+	val, err := json2response(r)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if val.Message != want {
+		t.Errorf("Expected %q, got %q", want, val.Error)
+	}
+}
+
 func TestTrackAPI(t *testing.T) {
 	var fakestorage *FakeStorage
 	storage.GetStorage = func() storage.Storage {
@@ -90,16 +123,13 @@ func TestTrackAPI(t *testing.T) {
 	w = httptest.NewRecorder()
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Car not found", http.StatusNotFound, w.Code)
+	checkResponseJSONError(t, w.Body, `Car 0 not found`)
 
 	//tracking the car
 	r, _ = http.NewRequest("PUT", "/api/v1/tracking/1/55.755/37.6251", nil)
 	w = httptest.NewRecorder()
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
+	checkResponseJSONMessage(t, w.Body, `success`)
 
-	got := w.Body.String()
-	want := `{"message":"success"}`
-	if got != want {
-		t.Errorf("Expected %q,got %q", want, got)
-	}
 }
