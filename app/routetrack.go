@@ -39,13 +39,15 @@ func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 
 	//TODO: refactor this. Middeware
-	b, err := json.Marshal(&struct {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	err = json.NewEncoder(w).Encode(&struct {
 		Message string `json:"message"`
 	}{"success"})
+
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	//	w.WriteHeader(http.StatusOK)
+	//	w.Write(b)
 	return http.StatusOK, nil
 }
