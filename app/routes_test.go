@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,7 +27,7 @@ func (s *FakeStorage) Init(string) error {
 	s.cars[1] = model.Car{
 		ID:     1,
 		Model:  model.ModelCar{ID: 1, Name: "test"},
-		Regnum: "XX001X",
+		Regnum: "XX1X",
 	}
 	return nil
 }
@@ -35,7 +36,10 @@ func (s *FakeStorage) Done() error {
 	return nil
 }
 
-func (s *FakeStorage) Track(model.Car, float64, float64) error {
+func (s *FakeStorage) Track(rn string, x float64, y float64) error {
+	if rn == "0" {
+		return errors.New("Car 0 not found")
+	}
 	return nil
 }
 
@@ -81,6 +85,7 @@ func json2response(r io.Reader) (*response, error) {
 }
 
 func checkResponseJSONError(t *testing.T, r io.Reader, want string) {
+	t.Helper()
 	val, err := json2response(r)
 	if err != nil {
 		t.Error(err)
@@ -92,6 +97,7 @@ func checkResponseJSONError(t *testing.T, r io.Reader, want string) {
 }
 
 func checkResponseJSONMessage(t *testing.T, r io.Reader, want string) {
+	t.Helper()
 	val, err := json2response(r)
 	if err != nil {
 		t.Error(err)
@@ -132,4 +138,5 @@ func TestTrackAPI(t *testing.T) {
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
 	checkResponseJSONMessage(t, w.Body, `success`)
 
+	//todo: проверить какие данные вставлены при трекинге
 }

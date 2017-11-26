@@ -8,8 +8,8 @@ type Storage interface {
 	Init(string) error
 	Done() error
 
-	//Трекинг ТС по координатам GPS. Возможно нужна высота?
-	Track(model.Car, float64, float64) error
+	//Трекинг ТС с рег.номером по координатам GPS. Возможно нужна высота?
+	Track(string, float64, float64) error
 
 	//Поиск ТС по ID
 	FindCarByID(id int) (*model.Car, error)

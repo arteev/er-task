@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/arteev/er-task/model"
@@ -129,21 +128,21 @@ func TestTrackPg(t *testing.T) {
 	car := model.Car{}
 
 	//test unknown car
-	err := s.Track(car, 0, 0)
+	err := s.Track("XXX", 0, 0)
 	if err == nil {
 		t.Error("Expected error")
 	}
-	if got := err.Error(); !strings.Contains(strings.ToUpper(got), "LOCATION_CAR_FKEY") {
-		want := `insert or update on table "LOCATION" violates foreign key constraint "LOCATION_CAR_fkey"`
+	want := `Car XXX not found`
+	if got := err.Error(); got != want {
 		t.Errorf("Expected error:%q, got %q", want, got)
 	}
 
 	//Add car with id=1
 	car = addCar(spg, 1, t)
-	if err := s.Track(car, 1, 1); err != nil {
+	if err := s.Track(car.Regnum, 1, 1); err != nil {
 		t.Error(err)
 	}
-	if err := s.Track(car, 1, 1); err != nil {
+	if err := s.Track(car.Regnum, 1, 1); err != nil {
 		t.Error(err)
 	}
 }

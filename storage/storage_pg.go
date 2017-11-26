@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/arteev/er-task/model"
 
@@ -10,7 +11,9 @@ import (
 )
 
 var (
-	sqlTrack    = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES($1,POINT($2,$3))`
+	sqlTrack = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES(  
+		(SELECT "ID" FROM "CAR" WHERE "REGNUM"=$1),
+		POINT($2,$3))`
 	sqlAddCar   = `INSERT INTO "CAR"("ID","MODEL","REGNUM") VALUES ($1,$2,$3)`
 	sqlFindByID = `SELECT c."ID", c."REGNUM", c."MODEL", m."NAME" "MODELNAME" FROM "CAR" c ,"MODEL" m
 	WHERE
@@ -60,8 +63,12 @@ func (pg *storagePG) prepare() (err error) {
 	return nil
 }
 
-func (pg *storagePG) Track(car model.Car, latitude float64, longitude float64) error {
-	_, err := pg.smttrac.Exec(&car.ID, &latitude, &latitude)
+func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) error {
+	//TODO: ??В очередь т.к. HL. если да то надо выше декоратор юзать??
+	_, err := pg.smttrac.Exec(regnum, latitude, longitude)
+	if err != nil && strings.Contains(err.Error(), `"CAR" violates not-null constrain`) {
+		return fmt.Errorf("Car %s not found", regnum)
+	}
 	return err
 }
 
