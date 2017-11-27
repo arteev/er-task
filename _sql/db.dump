@@ -36,10 +36,10 @@ SET search_path = public, pg_catalog;
 
 CREATE FUNCTION increment(i integer) RETURNS integer
     LANGUAGE plpgsql
-    AS $$
-    BEGIN
-      RETURN i + 1;
-    END;
+    AS $$
+    BEGIN
+      RETURN i + 1;
+    END;
     $$;
 
 
@@ -76,10 +76,12 @@ BEGIN
     DELETE FROM "CARGOODS" C
     WHERE C."CAR" = NEW."CAR"
       AND C."DEPT" = NEW."DEPT";
+    INSERT INTO "CARRENT"("CAR","IDRENTAL") VALUES (new."CAR",new."ID");
   END IF;
   -- при возврате подымаем в остаток подразделения
   IF new.OPER = opReturn THEN
     INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
+    DELETE FROM "CARRENT" WHERE "CAR"=NEW."CAR";
   END IF;
   RAISE EXCEPTION 'Unknown status rental %',new.OPER;
 END;
@@ -215,6 +217,48 @@ COMMENT ON COLUMN "CARGOODS"."DEPT" IS 'Подразделение';
 --
 
 COMMENT ON COLUMN "CARGOODS"."CAR" IS 'ТС';
+
+
+--
+-- Name: CARRENT; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "CARRENT" (
+    "ID" integer NOT NULL,
+    car integer NOT NULL,
+    idrental integer NOT NULL
+);
+
+
+ALTER TABLE "CARRENT" OWNER TO postgres;
+
+--
+-- Name: TABLE "CARRENT"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE "CARRENT" IS 'ТС находящиеся в аренде';
+
+
+--
+-- Name: CARRENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "CARRENT_ID_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "CARRENT_ID_seq" OWNER TO postgres;
+
+--
+-- Name: CARRENT_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE "CARRENT_ID_seq" OWNED BY "CARRENT"."ID";
 
 
 --
@@ -395,6 +439,13 @@ ALTER SEQUENCE "RENTAL_ID_seq" OWNED BY "RENTAL"."ID";
 
 
 --
+-- Name: CARRENT ID; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARRENT" ALTER COLUMN "ID" SET DEFAULT nextval('"CARRENT_ID_seq"'::regclass);
+
+
+--
 -- Name: LOCATION ID; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -429,6 +480,14 @@ COPY "CAR" ("ID", "MODEL", "REGNUM") FROM stdin;
 --
 
 COPY "CARGOODS" ("ID", "DEPT", "CAR") FROM stdin;
+\.
+
+
+--
+-- Data for Name: CARRENT; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "CARRENT" ("ID", car, idrental) FROM stdin;
 \.
 
 
@@ -484,6 +543,13 @@ SELECT pg_catalog.setval('"AGENT_ID_seq"', 151, true);
 --
 
 SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 1774, true);
+
+
+--
+-- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 1, false);
 
 
 --
@@ -617,6 +683,14 @@ ALTER TABLE ONLY "RENTAL"
 
 
 --
+-- Name: CARRENT carrent_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARRENT"
+    ADD CONSTRAINT carrent_pkey PRIMARY KEY ("ID");
+
+
+--
 -- Name: car_regnum_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -628,6 +702,20 @@ CREATE UNIQUE INDEX car_regnum_uindex ON "CAR" USING btree ("REGNUM");
 --
 
 CREATE UNIQUE INDEX cargoods_car_idx ON "CARGOODS" USING btree ("CAR");
+
+
+--
+-- Name: carrent_car_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX carrent_car_uindex ON "CARRENT" USING btree (car);
+
+
+--
+-- Name: RENTAL rental_del_lock_trg; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER rental_del_lock_trg BEFORE DELETE ON "RENTAL" FOR EACH ROW EXECUTE PROCEDURE rental_del_lock();
 
 
 --
@@ -691,6 +779,22 @@ ALTER TABLE ONLY "CARGOODS"
 
 ALTER TABLE ONLY "CARGOODS"
     ADD CONSTRAINT cargoods_department_id_fk FOREIGN KEY ("DEPT") REFERENCES "DEPARTMENT"("ID");
+
+
+--
+-- Name: CARRENT carrent_car_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARRENT"
+    ADD CONSTRAINT carrent_car_id_fk FOREIGN KEY (car) REFERENCES "CAR"("ID");
+
+
+--
+-- Name: CARRENT carrent_rental_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "CARRENT"
+    ADD CONSTRAINT carrent_rental_id_fk FOREIGN KEY (idrental) REFERENCES "RENTAL"("ID");
 
 
 --
