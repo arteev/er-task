@@ -46,6 +46,49 @@ CREATE FUNCTION increment(i integer) RETURNS integer
 ALTER FUNCTION public.increment(i integer) OWNER TO postgres;
 
 --
+-- Name: rental_del_lock(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION rental_del_lock() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  -- Блокировка удаления записи из журнала аренды
+  RAISE EXCEPTION 'Can not delete record from table RENTAL';
+END;
+$$;
+
+
+ALTER FUNCTION public.rental_del_lock() OWNER TO postgres;
+
+--
+-- Name: rental_goods(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION rental_goods() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE opRent SMALLINT = 1;
+DECLARE opReturn SMALLINT = 0;
+BEGIN
+  -- при взятии в аренду удаляем остаток в подразделении
+  IF new.OPER = opRent THEN
+    DELETE FROM "CARGOODS" C
+    WHERE C."CAR" = NEW."CAR"
+      AND C."DEPT" = NEW."DEPT";
+  END IF;
+  -- при возврате подымаем в остаток подразделения
+  IF new.OPER = opReturn THEN
+    INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
+  END IF;
+  RAISE EXCEPTION 'Unknown status rental %',new.OPER;
+END;
+$$;
+
+
+ALTER FUNCTION public.rental_goods() OWNER TO postgres;
+
+--
 -- Name: AGENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -433,35 +476,35 @@ COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT") FROM stdin;
 -- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"AGENT_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 151, true);
 
 
 --
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 1774, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 23, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 3194, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 313, true);
 
 
 --
@@ -475,7 +518,7 @@ SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1, false);
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 516, true);
 
 
 --
@@ -574,10 +617,24 @@ ALTER TABLE ONLY "RENTAL"
 
 
 --
+-- Name: car_regnum_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX car_regnum_uindex ON "CAR" USING btree ("REGNUM");
+
+
+--
 -- Name: cargoods_car_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX cargoods_car_idx ON "CARGOODS" USING btree ("CAR");
+
+
+--
+-- Name: RENTAL rental_goods_trg; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER rental_goods_trg AFTER INSERT ON "RENTAL" FOR EACH ROW EXECUTE PROCEDURE rental_goods();
 
 
 --
