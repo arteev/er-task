@@ -2,4 +2,4 @@
 note commands:
 docker exec -ti ertask_db_1 psql -U postgres
 docker exec -i ertask_db_1 psql -U postgres ${DBNAME} < ./_sql/db.dump
-
+docker exec -i ertask_db_1 pg_dump carrental -U postgres > ./_sql/db.dump

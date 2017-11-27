@@ -15,7 +15,13 @@ var templs *template.Template
 
 func init() {
 	var err error
-	templs, err = template.ParseGlob(path.Join(path.Dir(os.Args[0]), "_template", "*.gohtml"))
+	wd, err := os.Getwd()
+	if err != nil {
+		wd = os.Args[0]
+	}
+	wd = path.Dir(wd)
+	//TODO: dir template from env | flags
+	templs, err = template.ParseGlob(path.Join(wd, "_template", "*.gohtml"))
 	if err != nil {
 		panic(err)
 	}
