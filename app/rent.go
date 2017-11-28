@@ -7,26 +7,26 @@ import (
 	"github.com/gorilla/schema"
 )
 
-type rentdata struct {
-	RegNum   string `scheme:"regnum"` // Номер ТС
-	DeptCode string `scheme:"dept"`   // Код подразделения
-	AgentSS  string `scheme:"agent"`  // Код(ИД) агента
+type RentData struct {
+	RegNum   string `schema:"regnum"` // Номер ТС
+	DeptCode string `schema:"dept"`   // Код подразделения
+	AgentSS  string `schema:"agent"`  // Код(ИД) агента
 }
 
-func (r rentdata) Check() error {
+func (r RentData) Check() error {
 	if r.RegNum == "" || r.DeptCode == "" || r.AgentSS == "" {
 		return errors.New("Value not found")
 	}
 	return nil
 }
 
-func newRentData(r *http.Request) (*rentdata, int, error) {
+func newRentData(r *http.Request) (*RentData, int, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	rd := new(rentdata)
+	rd := new(RentData)
 	decoder := schema.NewDecoder()
-	err := decoder.Decode(rd, r.Form)
+	err := decoder.Decode(rd, r.PostForm)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}

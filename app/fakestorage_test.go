@@ -10,6 +10,11 @@ import (
 )
 
 type FakeStorage struct {
+	invokedTrack    bool
+	invokedFindByID bool
+	invokedRent     bool
+	invokedReturn   bool
+
 	sync.RWMutex
 	cars map[int]model.Car
 }
@@ -31,6 +36,7 @@ func (s *FakeStorage) Done() error {
 }
 
 func (s *FakeStorage) Track(rn string, x float64, y float64) error {
+	s.invokedTrack = true
 	if rn == "0" {
 		return errors.New("Car 0 not found")
 	}
@@ -40,6 +46,7 @@ func (s *FakeStorage) Track(rn string, x float64, y float64) error {
 func (s *FakeStorage) FindCarByID(id int) (*model.Car, error) {
 	s.RLock()
 	defer s.RUnlock()
+	s.invokedFindByID = true
 	car, exists := s.cars[id]
 	if !exists {
 		return nil, fmt.Errorf("Car %v not found", id)
@@ -49,12 +56,14 @@ func (s *FakeStorage) FindCarByID(id int) (*model.Car, error) {
 
 //TODO:!
 func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
-	return nil
+	s.invokedRent = true
+	return errors.New("Car not found")
 }
 
 //TODO:!
 func (s *FakeStorage) Return(rn string, dep string, agn string) error {
-	return nil
+	s.invokedReturn = true
+	return errors.New("Car not found")
 }
 
 func initFakeStorage() storage.Storage {

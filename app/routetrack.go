@@ -32,11 +32,6 @@ func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 		return http.StatusBadRequest, err
 	}
 
-	/*car, err := a.db.FindCarByID(carID)
-	if err != nil {
-		return http.StatusNotFound, err
-	}*/
-
 	if err := a.db.Track(carnum, x, y); err != nil {
 		return http.StatusNotFound, err
 	}

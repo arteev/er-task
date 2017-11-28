@@ -13,6 +13,7 @@ import (
 )
 
 func assertCodeEqual(t *testing.T, text string, want, got int) {
+	t.Helper()
 	if want != got {
 		t.Errorf("%s: Expected http.code %d, got %d", text, want, got)
 	}
@@ -71,7 +72,6 @@ func checkResponseJSONMessage(t *testing.T, r io.Reader, want string, near bool)
 }
 
 func TestTrackAPI(t *testing.T) {
-	//TODO:Invoked test
 	var fakestorage *FakeStorage
 	storage.GetStorage = func() storage.Storage {
 		fakestorage = &FakeStorage{}
@@ -79,7 +79,6 @@ func TestTrackAPI(t *testing.T) {
 	}
 	a := new(App)
 	a.init()
-	//http.Handle("/", a.init())
 	defer fakestorage.Done()
 
 	//invalid path(Variables empty)
@@ -92,6 +91,11 @@ func TestTrackAPI(t *testing.T) {
 	r, _ = http.NewRequest("PUT", "/api/v1/tracking/0/55.755/37.6251", nil)
 	w = httptest.NewRecorder()
 	a.routes.ServeHTTP(w, r)
+	//Invoked
+	if !fakestorage.invokedTrack {
+		t.Error("Must be invoke Storage.Track")
+	}
+
 	assertCodeEqual(t, "Expected:Car not found", http.StatusNotFound, w.Code)
 	checkResponseJSONError(t, w.Body, `Car 0 not found`, false)
 

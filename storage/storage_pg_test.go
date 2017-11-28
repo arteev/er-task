@@ -8,7 +8,7 @@ import (
 )
 
 //TODO: брать из env
-var pgConnectionTest = "postgres://postgres:example@127.0.0.1/carrental?sslmode=disable"
+var pgConnectionTest = "postgres://postgres:example@192.168.1.43/carrental?sslmode=disable"
 
 func setUp(t *testing.T) Storage {
 	s := GetStorage()
