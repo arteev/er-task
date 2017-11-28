@@ -63,6 +63,7 @@ func (pg *storagePG) prepare() (err error) {
 	return nil
 }
 
+//Трекинг ТС с рег.номером по координатам GPS.
 func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) error {
 	//TODO: ??В очередь т.к. HL. если да то надо выше декоратор юзать??
 	_, err := pg.smttrac.Exec(regnum, latitude, longitude)
@@ -70,6 +71,18 @@ func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) e
 		return fmt.Errorf("Car %s not found", regnum)
 	}
 	return err
+}
+
+//Взять в аренду ТС
+//TODO:!
+func (pg *storagePG) Rent(rn string, dep string, agn string) error {
+	return nil
+}
+
+//Вернуть ТС
+//TODO:!
+func (pg *storagePG) Return(rn string, dep string, agn string) error {
+	return nil
 }
 
 //TODO: refactor this. REPO
@@ -104,6 +117,5 @@ func (pg *storagePG) addcar(car model.Car) error {
 }
 
 func (pg *storagePG) addmodel(m model.ModelCar) error {
-
 	return nil
 }

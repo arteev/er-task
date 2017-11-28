@@ -9,15 +9,20 @@ type Storage interface {
 	Done() error
 
 	//Трекинг ТС с рег.номером по координатам GPS. Возможно нужна высота?
-	Track(string, float64, float64) error
+	Track(rn string, x float64, y float64) error
+
+	//Взять в аренду ТС
+	Rent(rn string, dep string, agn string) error
+	//Вернуть ТС
+	Return(rn string, dep string, agn string) error
 
 	//Поиск ТС по ID
 	FindCarByID(id int) (*model.Car, error)
 }
 
 //Для тестирования переопределить
-var GetStorage = getstoragePostgres
+var GetStorage = getStorageDefault
 
-func getstoragePostgres() Storage {
+func getStorageDefault() Storage {
 	return &storagePG{}
 }

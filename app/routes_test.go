@@ -2,62 +2,15 @@ package app
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"sync"
+	"strings"
 	"testing"
 
-	"github.com/arteev/er-task/model"
 	"github.com/arteev/er-task/storage"
 )
-
-type FakeStorage struct {
-	sync.RWMutex
-	cars map[int]model.Car
-}
-
-func (s *FakeStorage) Init(string) error {
-	s.Lock()
-	defer s.Unlock()
-	s.cars = make(map[int]model.Car)
-	s.cars[1] = model.Car{
-		ID:     1,
-		Model:  model.ModelCar{ID: 1, Name: "test"},
-		Regnum: "XX1X",
-	}
-	return nil
-}
-
-func (s *FakeStorage) Done() error {
-	return nil
-}
-
-func (s *FakeStorage) Track(rn string, x float64, y float64) error {
-	if rn == "0" {
-		return errors.New("Car 0 not found")
-	}
-	return nil
-}
-
-func (s *FakeStorage) FindCarByID(id int) (*model.Car, error) {
-	s.RLock()
-	defer s.RUnlock()
-	car, exists := s.cars[id]
-	if !exists {
-		return nil, fmt.Errorf("Car %v not found", id)
-	}
-	return &car, nil
-}
-
-func initFakeStorage() storage.Storage {
-	return &FakeStorage{}
-}
-
-//////////////////////////////
 
 func assertCodeEqual(t *testing.T, text string, want, got int) {
 	if want != got {
@@ -76,6 +29,9 @@ func json2response(r io.Reader) (*response, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(b) == 0 {
+		return &response{}, nil
+	}
 	val := response{}
 	err = json.Unmarshal(b, &val)
 	if err != nil {
@@ -84,31 +40,38 @@ func json2response(r io.Reader) (*response, error) {
 	return &val, nil
 }
 
-func checkResponseJSONError(t *testing.T, r io.Reader, want string) {
+func checkResponseJSON(t *testing.T, r io.Reader, got, want string, near bool) {
 	t.Helper()
-	val, err := json2response(r)
-	if err != nil {
-		t.Error(err)
-		return
+	if !near && got != want {
+		t.Errorf("Expected %q, got %q", want, got)
 	}
-	if val.Error != want {
-		t.Errorf("Expected %q, got %q", want, val.Error)
+	if near && !strings.Contains(got, want) {
+		t.Errorf("Expected %q, got %q", want, got)
 	}
 }
 
-func checkResponseJSONMessage(t *testing.T, r io.Reader, want string) {
+func checkResponseJSONError(t *testing.T, r io.Reader, want string, near bool) {
 	t.Helper()
 	val, err := json2response(r)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if val.Message != want {
-		t.Errorf("Expected %q, got %q", want, val.Error)
+	checkResponseJSON(t, r, val.Error, want, near)
+}
+
+func checkResponseJSONMessage(t *testing.T, r io.Reader, want string, near bool) {
+	t.Helper()
+	val, err := json2response(r)
+	if err != nil {
+		t.Error(err)
+		return
 	}
+	checkResponseJSON(t, r, val.Message, want, near)
 }
 
 func TestTrackAPI(t *testing.T) {
+	//TODO:Invoked test
 	var fakestorage *FakeStorage
 	storage.GetStorage = func() storage.Storage {
 		fakestorage = &FakeStorage{}
@@ -116,6 +79,7 @@ func TestTrackAPI(t *testing.T) {
 	}
 	a := new(App)
 	a.init()
+	//http.Handle("/", a.init())
 	defer fakestorage.Done()
 
 	//invalid path(Variables empty)
@@ -129,14 +93,14 @@ func TestTrackAPI(t *testing.T) {
 	w = httptest.NewRecorder()
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Car not found", http.StatusNotFound, w.Code)
-	checkResponseJSONError(t, w.Body, `Car 0 not found`)
+	checkResponseJSONError(t, w.Body, `Car 0 not found`, false)
 
 	//tracking the car
 	r, _ = http.NewRequest("PUT", "/api/v1/tracking/1/55.755/37.6251", nil)
 	w = httptest.NewRecorder()
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
-	checkResponseJSONMessage(t, w.Body, `success`)
+	checkResponseJSONMessage(t, w.Body, `success`, false)
 
-	//todo: проверить какие данные вставлены при трекинге
+	//TODO: проверить какие данные вставлены при трекинге
 }

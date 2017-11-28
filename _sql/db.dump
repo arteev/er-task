@@ -225,19 +225,12 @@ COMMENT ON COLUMN "CARGOODS"."CAR" IS 'ТС';
 
 CREATE TABLE "CARRENT" (
     "ID" integer NOT NULL,
-    car integer NOT NULL,
-    idrental integer NOT NULL
+    "CAR" integer NOT NULL,
+    "IDRENTAL" integer NOT NULL
 );
 
 
 ALTER TABLE "CARRENT" OWNER TO postgres;
-
---
--- Name: TABLE "CARRENT"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE "CARRENT" IS 'ТС находящиеся в аренде';
-
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -487,7 +480,7 @@ COPY "CARGOODS" ("ID", "DEPT", "CAR") FROM stdin;
 -- Data for Name: CARRENT; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "CARRENT" ("ID", car, idrental) FROM stdin;
+COPY "CARRENT" ("ID", "CAR", "IDRENTAL") FROM stdin;
 \.
 
 
@@ -535,14 +528,14 @@ COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT") FROM stdin;
 -- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"AGENT_ID_seq"', 151, true);
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 201, true);
 
 
 --
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 1774, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2104, true);
 
 
 --
@@ -556,35 +549,35 @@ SELECT pg_catalog.setval('"CARRENT_ID_seq"', 1, false);
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 23, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 26, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 3194, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 3524, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 313, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 391, true);
 
 
 --
 -- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 527, true);
 
 
 --
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 516, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 617, true);
 
 
 --
@@ -708,7 +701,7 @@ CREATE UNIQUE INDEX cargoods_car_idx ON "CARGOODS" USING btree ("CAR");
 -- Name: carrent_car_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX carrent_car_uindex ON "CARRENT" USING btree (car);
+CREATE UNIQUE INDEX carrent_car_uindex ON "CARRENT" USING btree ("CAR");
 
 
 --
@@ -786,7 +779,7 @@ ALTER TABLE ONLY "CARGOODS"
 --
 
 ALTER TABLE ONLY "CARRENT"
-    ADD CONSTRAINT carrent_car_id_fk FOREIGN KEY (car) REFERENCES "CAR"("ID");
+    ADD CONSTRAINT carrent_car_id_fk FOREIGN KEY ("CAR") REFERENCES "CAR"("ID");
 
 
 --
@@ -794,7 +787,7 @@ ALTER TABLE ONLY "CARRENT"
 --
 
 ALTER TABLE ONLY "CARRENT"
-    ADD CONSTRAINT carrent_rental_id_fk FOREIGN KEY (idrental) REFERENCES "RENTAL"("ID");
+    ADD CONSTRAINT carrent_rental_id_fk FOREIGN KEY ("IDRENTAL") REFERENCES "RENTAL"("ID");
 
 
 --
