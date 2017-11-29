@@ -11,55 +11,51 @@ import (
 var pgConnectionTest = "postgres://postgres:example@192.168.1.43/carrental?sslmode=disable"
 
 func setUp(t *testing.T) Storage {
+	t.Helper()
 	s := GetStorage()
 	err := s.Init(pgConnectionTest)
 	if err != nil {
 		t.Fatal(err)
 	}
 	spg := s.(*storagePG)
-	_, err = spg.db.Exec(`INSERT INTO "CARTYPE"("ID","NAME","CODE") VALUES (1,'AUTO','AUTO')`)
-	if err != nil {
-		t.Fatal(err)
+	sqls := []string{
+		`INSERT INTO "CARTYPE"("ID","NAME","CODE") VALUES (1,'AUTO','AUTO')`,
+		`INSERT INTO  "MODEL"("ID","NAME","CTYPE") VALUES (1,'test',1);`,
+		`INSERT INTO  "DEPARTMENT"("ID","NAME") VALUES (1,'dep1');`,
+		`INSERT INTO  "AGENT"("ID","CODE","NAME","MIDDLENAME","FAMILY") VALUES (1,'000-000-000 01','Иван','Иванович','Иванов');`,
 	}
-	_, err = spg.db.Exec(`INSERT INTO  "MODEL"("ID","NAME","CTYPE") VALUES (1,'test',1);`)
-	if err != nil {
-		t.Fatal(err)
+	for _, sql := range sqls {
+		_, err = spg.db.Exec(sql)
+		if err != nil {
+			t.Errorf("Exec sql: %q. %s", sql, err)
+		}
 	}
-
 	return s
 }
 
 func clearData(s *storagePG, t *testing.T) {
-
-	_, err := s.db.Exec(`DELETE FROM "LOCATION"`)
-	if err != nil {
-		t.Error(err)
+	sqls := []string{
+		`DELETE FROM "CARGOODS"`,
+		`DELETE FROM "CARRENT"`,
+		`DELETE FROM "RENTAL"`,
+		`DELETE FROM "LOCATION"`,
+		`DELETE FROM "CAR"`,
+		`DELETE FROM "MODEL"`,
+		`DELETE FROM "CARTYPE"`,
+		`DELETE FROM "CAR"`,
+		`DELETE FROM "DEPARTMENT"`,
+		`DELETE FROM "AGENT"`,
 	}
-
-	_, err = s.db.Exec(`DELETE FROM "CAR"`)
-	if err != nil {
-		t.Error(err)
+	for _, sql := range sqls {
+		_, err := s.db.Exec(sql)
+		if err != nil {
+			t.Errorf("Exec sql: %q. %s", sql, err)
+		}
 	}
-
-	_, err = s.db.Exec(`DELETE FROM "MODEL"`)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = s.db.Exec(`DELETE FROM "CARTYPE"`)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = s.db.Exec(`DELETE FROM "CAR"`)
-	if err != nil {
-		t.Error(err)
-	}
-
 }
 
 func addCar(s *storagePG, id int, t *testing.T) model.Car {
-	//model = test
+	t.Helper()
 	c := model.Car{
 		ID: id,
 		Model: model.CarModel{
@@ -75,6 +71,32 @@ func addCar(s *storagePG, id int, t *testing.T) model.Car {
 
 	}
 	return c
+}
+
+func ExistsRentReturn(t *testing.T, s *storagePG, rn, dep, agent string, isRent bool) bool {
+	op := 1
+	if !isRent {
+		op = 0
+	}
+	t.Helper()
+	r := s.db.QueryRow(`SELECT COUNT(*) FROM "RENTAL" R,"CAR" C,"DEPARTMENT" d, "AGENT" a
+	WHERE r."CAR" = c."ID"
+	  and d."ID" = r."DEPT"
+	  and r."AGENT" = a."ID"
+	  and c."REGNUM"= $1
+	  and d."NAME" = $2
+	  and a."CODE" = $3
+	  and r."OPER"= $4
+		 `, rn, dep, agent, op)
+	var count int64
+	if err := r.Scan(&count); err != nil {
+		t.Error(err)
+	}
+	if count <= 0 {
+		return false
+	}
+	//
+	return true
 }
 
 ////////////
@@ -144,5 +166,37 @@ func TestTrackPg(t *testing.T) {
 	}
 	if err := s.Track(car.Regnum, 1, 1); err != nil {
 		t.Error(err)
+	}
+
+	//TODO: Проверить данные добавлены или нет
+
+}
+
+func TestRentPg(t *testing.T) {
+	s := setUp(t)
+	spg := s.(*storagePG)
+	defer s.Done()
+	defer clearData(spg, t)
+
+	//see:setUp
+	err := s.Rent("000", "dep1", "000-000-000 01")
+	if err == nil {
+		t.Error("Expected error")
+	}
+	car := addCar(spg, 1, t)
+	err = s.Rent(car.Regnum, "dep1", "000-000-000 01")
+	if err != nil {
+		t.Error(err)
+	}
+	if !ExistsRentReturn(t, spg, car.Regnum, "dep1", "000-000-000 01", true) {
+		t.Error("Data not found for rent")
+	}
+
+	err = s.Return(car.Regnum, "dep1", "000-000-000 01")
+	if err != nil {
+		t.Error(err)
+	}
+	if !ExistsRentReturn(t, spg, car.Regnum, "dep1", "000-000-000 01", false) {
+		t.Error("Data not found for return")
 	}
 }

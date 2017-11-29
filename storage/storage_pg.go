@@ -10,6 +10,11 @@ import (
 	_ "github.com/lib/pq" //
 )
 
+const (
+	opReturn = 0
+	opRent   = 1
+)
+
 var (
 	sqlTrack = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES(  
 		(SELECT "ID" FROM "CAR" WHERE "REGNUM"=$1),
@@ -19,6 +24,12 @@ var (
 	WHERE
 		c."MODEL" = m."ID"
 		and c."ID"=$1`
+
+	sqlRentJornal = `INSERT INTO "RENTAL"("TSWORK","OPER","CAR","DEPT","AGENT") VALUES (
+		CURRENT_TIMESTAMP,$1,
+		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = $2),
+		(SELECT "DEPARTMENT"."ID" FROM "DEPARTMENT" WHERE "DEPARTMENT"."NAME" = $3),
+		(SELECT "AGENT"."ID" FROM "AGENT" WHERE "AGENT"."CODE" = $4))`
 )
 
 //TODO: refactor template Repository
@@ -28,6 +39,7 @@ type storagePG struct {
 	smttrac         *sql.Stmt
 	stmtAddCar      *sql.Stmt
 	stmtFindCarByID *sql.Stmt
+	stmtRentJornal  *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string) error {
@@ -49,16 +61,21 @@ func (pg *storagePG) Done() error {
 func (pg *storagePG) prepare() (err error) {
 	pg.smttrac, err = pg.db.Prepare(sqlTrack)
 	if err != nil {
-		return
+		return err
 	}
 	pg.stmtAddCar, err = pg.db.Prepare(sqlAddCar)
 	if err != nil {
-		return
+		return err
 	}
 
 	pg.stmtFindCarByID, err = pg.db.Prepare(sqlFindByID)
 	if err != nil {
-		return
+		return err
+	}
+	pg.stmtRentJornal, err = pg.db.Prepare(sqlRentJornal)
+	if err != nil {
+		return err
+
 	}
 	return nil
 }
@@ -76,12 +93,20 @@ func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) e
 //Взять в аренду ТС
 //TODO:!
 func (pg *storagePG) Rent(rn string, dep string, agn string) error {
+	_, err := pg.stmtRentJornal.Exec(opRent, rn, dep, agn)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 //Вернуть ТС
 //TODO:!
 func (pg *storagePG) Return(rn string, dep string, agn string) error {
+	_, err := pg.stmtRentJornal.Exec(opReturn, rn, dep, agn)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
