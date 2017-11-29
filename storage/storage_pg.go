@@ -84,29 +84,29 @@ func (pg *storagePG) prepare() (err error) {
 func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) error {
 	//TODO: ??В очередь т.к. HL. если да то надо выше декоратор юзать??
 	_, err := pg.smttrac.Exec(regnum, latitude, longitude)
-	if err != nil && strings.Contains(err.Error(), `"CAR" violates not-null constrain`) {
+	if err != nil && strings.Contains(err.Error(), `"CAR" violates not-null constraint`) {
 		return fmt.Errorf("Car %s not found", regnum)
 	}
 	return err
 }
 
 //Взять в аренду ТС
-//TODO:!
 func (pg *storagePG) Rent(rn string, dep string, agn string) error {
 	_, err := pg.stmtRentJornal.Exec(opRent, rn, dep, agn)
 	if err != nil {
 		return err
 	}
+	//TODO: parse text error. Replace text error
 	return nil
 }
 
 //Вернуть ТС
-//TODO:!
 func (pg *storagePG) Return(rn string, dep string, agn string) error {
 	_, err := pg.stmtRentJornal.Exec(opReturn, rn, dep, agn)
 	if err != nil {
 		return err
 	}
+	//TODO: parse text error. Replace text error
 	return nil
 }
 
@@ -141,6 +141,6 @@ func (pg *storagePG) addcar(car model.Car) error {
 	return err
 }
 
-func (pg *storagePG) addmodel(m model.CarModel) error {
+/*func (pg *storagePG) addmodel(m model.CarModel) error {
 	return nil
-}
+}*/

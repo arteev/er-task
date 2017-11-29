@@ -74,7 +74,7 @@ func checkResponseJSONMessage(t *testing.T, r io.Reader, want string, near bool)
 func TestTrackAPI(t *testing.T) {
 	var fakestorage *FakeStorage
 	storage.GetStorage = func() storage.Storage {
-		fakestorage = &FakeStorage{}
+		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
 	a := new(App)
@@ -105,5 +105,9 @@ func TestTrackAPI(t *testing.T) {
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
 	checkResponseJSONMessage(t, w.Body, `success`, false)
+
 	//TODO: проверить какие данные вставлены при трекинге
+	if got := fakestorage.countTrack("1"); got != 1 {
+		t.Errorf("Expected count track %d, got %d", 1, got)
+	}
 }

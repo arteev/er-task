@@ -35,6 +35,7 @@ func setUp(t *testing.T) Storage {
 
 func clearData(s *storagePG, t *testing.T) {
 	sqls := []string{
+		`UPDATE "RENTAL" SET "DUMMY"=1`,
 		`DELETE FROM "CARGOODS"`,
 		`DELETE FROM "CARRENT"`,
 		`DELETE FROM "RENTAL"`,

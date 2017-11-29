@@ -9,6 +9,11 @@ import (
 	"github.com/arteev/er-task/storage"
 )
 
+type point struct {
+	latitude  float64
+	longitude float64
+}
+
 type FakeStorage struct {
 	invokedTrack    bool
 	invokedFindByID bool
@@ -22,16 +27,12 @@ type FakeStorage struct {
 	department  map[string]model.Department
 	carmodel    map[string]model.CarModel
 	rentjournal map[string]struct{}
+	track       map[string][]point
 }
 
 func (s *FakeStorage) Init(string) error {
 	s.Lock()
 	defer s.Unlock()
-	/*s.cars[1] = model.Car{
-		ID:     1,
-		Model:  model.ModelCar{ID: 1, Name: "test"},
-		Regnum: "XX1X",
-	}*/
 	return nil
 }
 
@@ -39,11 +40,19 @@ func (s *FakeStorage) Done() error {
 	return nil
 }
 
-func (s *FakeStorage) Track(rn string, x float64, y float64) error {
+func (s *FakeStorage) Track(rn string, latitude float64, longitude float64) error {
+	s.Lock()
+	defer s.Unlock()
 	s.invokedTrack = true
 	if rn == "0" {
 		return errors.New("Car 0 not found")
 	}
+	c, exists := s.track[rn]
+	if !exists {
+		c = make([]point, 0)
+	}
+	c = append(c, point{latitude, longitude})
+	s.track[rn] = c
 	return nil
 }
 
@@ -111,6 +120,7 @@ func initFakeStorage() storage.Storage {
 		agent:       make(map[string]model.Agent),
 		carmodel:    make(map[string]model.CarModel),
 		rentjournal: make(map[string]struct{}),
+		track:       make(map[string][]point),
 	}
 }
 
@@ -147,6 +157,17 @@ func (s *FakeStorage) addagent(id int, code, name, midname, family string) model
 	return s.agent[code]
 }
 
+//helper for test. Count track coordinates by regnum of the car
+func (s *FakeStorage) countTrack(rn string) int {
+	s.RLock()
+	defer s.RUnlock()
+	c, exists := s.track[rn]
+	if !exists {
+		return 0
+	}
+	return len(c)
+}
+
 func (s *FakeStorage) clear() {
 	s.cars = make(map[string]model.Car)
 	s.carid = make(map[int]model.Car)
@@ -154,4 +175,5 @@ func (s *FakeStorage) clear() {
 	s.agent = make(map[string]model.Agent)
 	s.carmodel = make(map[string]model.CarModel)
 	s.rentjournal = make(map[string]struct{})
+	s.track = make(map[string][]point)
 }
