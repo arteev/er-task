@@ -20,6 +20,7 @@ func ErrorHandler(fn func(http.ResponseWriter, *http.Request) (int, error)) func
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(err.Error()))
 			}
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(status)
 			w.Write(b)
 		}

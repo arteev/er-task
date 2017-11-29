@@ -62,7 +62,7 @@ func addCar(s *storagePG, id int, t *testing.T) model.Car {
 	//model = test
 	c := model.Car{
 		ID: id,
-		Model: model.ModelCar{
+		Model: model.CarModel{
 			ID:   1,
 			Name: "test",
 			//TODO: CARTYPE

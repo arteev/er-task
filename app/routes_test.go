@@ -105,6 +105,5 @@ func TestTrackAPI(t *testing.T) {
 	a.routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
 	checkResponseJSONMessage(t, w.Body, `success`, false)
-
 	//TODO: проверить какие данные вставлены при трекинге
 }

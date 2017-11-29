@@ -103,7 +103,7 @@ func (pg *storagePG) FindCarByID(id int) (*model.Car, error) {
 	car := &model.Car{
 		ID:     int(idc.Int64),
 		Regnum: regnum,
-		Model: model.ModelCar{
+		Model: model.CarModel{
 			ID:   int(idmodel.Int64),
 			Name: smodel,
 		},
@@ -116,6 +116,6 @@ func (pg *storagePG) addcar(car model.Car) error {
 	return err
 }
 
-func (pg *storagePG) addmodel(m model.ModelCar) error {
+func (pg *storagePG) addmodel(m model.CarModel) error {
 	return nil
 }
