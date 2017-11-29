@@ -36,10 +36,10 @@ SET search_path = public, pg_catalog;
 
 CREATE FUNCTION increment(i integer) RETURNS integer
     LANGUAGE plpgsql
-    AS $$
-    BEGIN
-      RETURN i + 1;
-    END;
+    AS $$
+    BEGIN
+      RETURN i + 1;
+    END;
     $$;
 
 
@@ -54,6 +54,9 @@ CREATE FUNCTION rental_del_lock() RETURNS trigger
     AS $$
 BEGIN
   -- Блокировка удаления записи из журнала аренды
+  IF OLD."DUMMY" IS NOT NULL THEN
+    RETURN OLD;
+  END IF;
   RAISE EXCEPTION 'Can not delete record from table RENTAL';
 END;
 $$;
@@ -71,19 +74,22 @@ CREATE FUNCTION rental_goods() RETURNS trigger
 DECLARE opRent SMALLINT = 1;
 DECLARE opReturn SMALLINT = 0;
 BEGIN
+  NEW."DUMMY" = null;
   -- при взятии в аренду удаляем остаток в подразделении
-  IF new.OPER = opRent THEN
+  IF new."OPER" = opRent THEN
     DELETE FROM "CARGOODS" C
     WHERE C."CAR" = NEW."CAR"
       AND C."DEPT" = NEW."DEPT";
     INSERT INTO "CARRENT"("CAR","IDRENTAL") VALUES (new."CAR",new."ID");
+    RETURN NEW;
   END IF;
   -- при возврате подымаем в остаток подразделения
-  IF new.OPER = opReturn THEN
+  IF new."OPER" = opReturn THEN
     INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
     DELETE FROM "CARRENT" WHERE "CAR"=NEW."CAR";
+    RETURN NEW;
   END IF;
-  RAISE EXCEPTION 'Unknown status rental %',new.OPER;
+  RAISE EXCEPTION 'Unknown status rental %',new."OPER";
 END;
 $$;
 
@@ -403,6 +409,7 @@ CREATE TABLE "RENTAL" (
     "OPER" smallint DEFAULT '0'::smallint NOT NULL,
     "DEPT" integer NOT NULL,
     "AGENT" integer NOT NULL,
+    "DUMMY" smallint,
     CONSTRAINT checkoper CHECK (("OPER" = ANY (ARRAY[0, 1])))
 );
 
@@ -520,7 +527,7 @@ COPY "MODEL" ("ID", "NAME", "CTYPE") FROM stdin;
 -- Data for Name: RENTAL; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT") FROM stdin;
+COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT", "DUMMY") FROM stdin;
 \.
 
 
@@ -535,14 +542,14 @@ SELECT pg_catalog.setval('"AGENT_ID_seq"', 201, true);
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2104, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2109, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 18, true);
 
 
 --
@@ -570,7 +577,7 @@ SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 391, true);
 -- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"LOCATION_ID_seq"', 527, true);
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1275, true);
 
 
 --
@@ -584,7 +591,7 @@ SELECT pg_catalog.setval('"MODEL_ID_seq"', 617, true);
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1, false);
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 62, true);
 
 
 --
