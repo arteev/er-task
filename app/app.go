@@ -4,9 +4,9 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/arteev/er-task/storage"
+	"github.com/arteev/er-task/ws"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -15,12 +15,10 @@ import (
 var templs *template.Template
 
 func init() {
-	var err error
+
 	//TODO: dir template from env | flags
-	templs, err = template.ParseGlob(path.Join("./_template", "*.gohtml"))
-	if err != nil {
-		//panic(err)
-	}
+	templs = template.Must(template.ParseGlob("_template/*"))
+
 }
 
 //App - Application
@@ -61,7 +59,13 @@ func (a *App) init() http.Handler {
 			IsAPI:   false,
 			Path:    "/",
 			Methods: []string{"GET"},
-			Handler: a.Index,
+			Handler: a.AutoReloadTemplates(a.Index),
+		},
+		{
+			IsAPI:   false,
+			Path:    "/ws",
+			Methods: []string{},
+			Handler: ws.GetServer().Handler,
 		},
 	}
 	return a.regroutes()

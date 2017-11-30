@@ -1,13 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Hello</h1>
+{{template "header" .}}
+    <h3>История проката автомобилей</h3> 
+
+    <script src="static/js/history.js"></script>    
+    <link rel="stylesheet" type="text/css" href="static/js/style.css" media="screen" />
+ 
+    <table id="thistory" border=1>
+        <thead>
+            <tr>
+                <td>Тип</td>
+                <td>Марка</td>
+                <td>Гос.номер</td>
+                <td>Дата аренды</td>
+                <td>Дата возврата</td>
+                <td>ФИО</td>
+            </tr>
+        </thead>
+        <tbody id="tbodyhistory">
+        </tbody>
+    </table>
+
     <a href="./static/LICENSE.txt">LICENCE</a>
-</body>
-</html>
+{{template "footer" .}}    

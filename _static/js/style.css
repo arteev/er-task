@@ -1,0 +1,13 @@
+.itemhist {
+    font-style: normal;
+   
+}
+.newitemhist  {
+    font-style: italic;
+    background: #16d89e
+}
+
+.errorinfo {
+    color: red
+}
+

@@ -10,12 +10,6 @@ import (
 
 //TODO: mux ?? toJSON() ????
 
-func (a *App) Index(w http.ResponseWriter, r *http.Request) {
-	//	w.Write([]byte("Index"))
-
-	templs.Execute(w, nil)
-}
-
 //Handler для трекинга ТС
 func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 	vars := mux.Vars(r)
