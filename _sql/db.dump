@@ -71,8 +71,13 @@ ALTER FUNCTION public.rental_del_lock() OWNER TO postgres;
 CREATE FUNCTION rental_goods() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
-DECLARE opRent SMALLINT = 1;
-DECLARE opReturn SMALLINT = 0;
+DECLARE
+  opRent SMALLINT = 1;
+  opReturn SMALLINT = 0;
+  data json;
+  notification json;
+  REC RECORD;
+  eventname text = 'webnotify';
 BEGIN
   NEW."DUMMY" = null;
   -- при взятии в аренду удаляем остаток в подразделении
@@ -81,20 +86,80 @@ BEGIN
     WHERE C."CAR" = NEW."CAR"
       AND C."DEPT" = NEW."DEPT";
     INSERT INTO "CARRENT"("CAR","IDRENTAL") VALUES (new."CAR",new."ID");
-    RETURN NEW;
   END IF;
   -- при возврате подымаем в остаток подразделения
   IF new."OPER" = opReturn THEN
+    DELETE FROM "CARGOODS" C
+    WHERE C."CAR" = NEW."CAR";        
     INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
     DELETE FROM "CARRENT" WHERE "CAR"=NEW."CAR";
-    RETURN NEW;
   END IF;
+  /*
+  Type     string    `json:"type"`
+				Model    string    `json:"model"`
+				RN       string    `json:"rn"`
+				DateOPER time.Time `json:"dateOPER"`
+				Agent    string    `json:"agent"`
+				Oper     string    `json:"oper"`*/
+
+  SELECT T."NAME" "TYPE",M."NAME" "MODEL",C."REGNUM" "RN",R."TSWORK" "DATEOPER",
+    A."CODE" "AGENTCODE",A."NAME"||' '||A."MIDDLENAME"||' '||A."FAMILY" "AGENT",
+    CASE R."OPER" WHEN 1 THEN 'rent' ELSE 'return' END "OPER" INTO REC
+  FROM "CARTYPE" T, "MODEL" M, "CAR" C, "AGENT" A, "DEPARTMENT" D, "RENTAL" R
+  WHERE R."CAR" = C."ID"
+  AND T."ID" = M."CTYPE"
+  AND C."MODEL" = M."ID"
+  AND R."AGENT" = A."ID"
+  AND D."ID" = R."DEPT"
+  AND R."ID" = NEW."ID";
+
+  data = row_to_json(REC);
+  notification = json_build_object(
+                          'name','RENT',
+                          'data', data);
+  PERFORM pg_notify(eventname,notification::text);
+
+  RETURN NEW;
   RAISE EXCEPTION 'Unknown status rental %',new."OPER";
 END;
 $$;
 
 
 ALTER FUNCTION public.rental_goods() OWNER TO postgres;
+
+--
+-- Name: rental_goods_check(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION rental_goods_check() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  opRent SMALLINT = 1;
+  opReturn SMALLINT = 0;
+  icnt INTEGER;
+  sregnum VARCHAR;
+BEGIN
+  SELECT "CAR"."REGNUM" INTO sregnum FROM "CAR" WHERE "CAR"."ID" = new."CAR";
+  --при аренде ТС должно присутствовать в CARGOODS
+  IF opRent = new."OPER" THEN
+    SELECT count(1) INTO icnt from "CARGOODS" WHERE "CARGOODS"."CAR" = new."CAR";
+    IF icnt=0 THEN
+      RAISE EXCEPTION 'Транспортное средство % должно быть в наличии в любой точке выдачи ',sregnum;
+    END IF;
+  END IF;
+  IF opReturn = new."OPER" THEN
+    SELECT count(1) INTO icnt from "CARRENT" WHERE "CARRENT"."CAR" = new."CAR";
+    IF icnt=0 THEN
+      RAISE EXCEPTION 'Транспортное средство % должно быть в прокате для принятия а любой точке',sregnum;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.rental_goods_check() OWNER TO postgres;
 
 --
 -- Name: AGENT_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -535,63 +600,63 @@ COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT", "DUMMY") FR
 -- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"AGENT_ID_seq"', 201, true);
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 301, true);
 
 
 --
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2109, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2959, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 18, true);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 111, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 26, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 32, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 3524, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 4276, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 391, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 547, true);
 
 
 --
 -- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1275, true);
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1530, true);
 
 
 --
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 617, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 823, true);
 
 
 --
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 62, true);
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 345, true);
 
 
 --
@@ -716,6 +781,13 @@ CREATE UNIQUE INDEX carrent_car_uindex ON "CARRENT" USING btree ("CAR");
 --
 
 CREATE TRIGGER rental_del_lock_trg BEFORE DELETE ON "RENTAL" FOR EACH ROW EXECUTE PROCEDURE rental_del_lock();
+
+
+--
+-- Name: RENTAL rental_goods_check_trg; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER rental_goods_check_trg BEFORE INSERT ON "RENTAL" FOR EACH ROW EXECUTE PROCEDURE rental_goods_check();
 
 
 --
