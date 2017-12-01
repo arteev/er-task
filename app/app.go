@@ -17,7 +17,11 @@ var templs *template.Template
 func init() {
 
 	//TODO: dir template from env | flags
-	templs = template.Must(template.ParseGlob("_template/*"))
+	var err error
+	templs, err = template.ParseGlob("_template/*")
+	if err != nil {
+		///
+	}
 
 }
 
@@ -31,7 +35,7 @@ type App struct {
 
 func (a *App) init() http.Handler {
 	a.db = storage.GetStorage()
-	err := a.db.Init(a.connectionString)
+	err := a.db.Init(a.connectionString, true)
 	if err != nil {
 		panic(err)
 	}
@@ -61,11 +65,12 @@ func (a *App) init() http.Handler {
 			Methods: []string{"GET"},
 			Handler: a.AutoReloadTemplates(a.Index),
 		},
+		// websocket
 		{
 			IsAPI:   false,
 			Path:    "/ws",
 			Methods: []string{},
-			Handler: ws.GetServer().Handler,
+			Handler: ws.GetServer(a.db.Notify()).Handler,
 		},
 	}
 	return a.regroutes()

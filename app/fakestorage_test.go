@@ -30,7 +30,19 @@ type FakeStorage struct {
 	track       map[string][]point
 }
 
-func (s *FakeStorage) Init(string) error {
+func initFakeStorage() storage.Storage {
+	return &FakeStorage{
+		cars:        make(map[string]model.Car),
+		carid:       make(map[int]model.Car),
+		department:  make(map[string]model.Department),
+		agent:       make(map[string]model.Agent),
+		carmodel:    make(map[string]model.CarModel),
+		rentjournal: make(map[string]struct{}),
+		track:       make(map[string][]point),
+	}
+}
+
+func (s *FakeStorage) Init(string, bool) error {
 	s.Lock()
 	defer s.Unlock()
 	return nil
@@ -112,16 +124,9 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	return nil
 }
 
-func initFakeStorage() storage.Storage {
-	return &FakeStorage{
-		cars:        make(map[string]model.Car),
-		carid:       make(map[int]model.Car),
-		department:  make(map[string]model.Department),
-		agent:       make(map[string]model.Agent),
-		carmodel:    make(map[string]model.CarModel),
-		rentjournal: make(map[string]struct{}),
-		track:       make(map[string][]point),
-	}
+func (pg *FakeStorage) Notify() chan storage.Notification {
+	//TODO:
+	return nil
 }
 
 //helper for test. Add/Update Department

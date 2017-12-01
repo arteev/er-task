@@ -4,8 +4,13 @@ import (
 	"github.com/arteev/er-task/model"
 )
 
+type Notification struct {
+	Name string                 `json:"name"`
+	Data map[string]interface{} `json:"data"`
+}
+
 type Storage interface {
-	Init(string) error
+	Init(string, bool) error
 	Done() error
 
 	//Трекинг ТС с рег.номером по координатам GPS. Возможно нужна высота?
@@ -13,11 +18,15 @@ type Storage interface {
 
 	//Взять в аренду ТС
 	Rent(rn string, dep string, agn string) error
+
 	//Вернуть ТС
 	Return(rn string, dep string, agn string) error
 
 	//Поиск ТС по ID
 	FindCarByID(id int) (*model.Car, error)
+
+	//Уведомление от хранилища о событиях
+	Notify() chan Notification
 }
 
 //Для тестирования переопределить

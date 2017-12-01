@@ -14,19 +14,23 @@ window.onload=function() {
         addcolumn(item.type)              
         addcolumn(item.model)
         addcolumn( '<a href="/carhistory">'+item.rn+'<a>')
-        addcolumn(item.daterent)
-        addcolumn(item.dateret)
         addcolumn(item.agent)
+        addcolumn(item.oper=="rent"?"Аренда":"Возврат" )
+        addcolumn(item.daterent)
+        addcolumn(item.dateret)        
         tbody.insertBefore(row,tbody.children[0])
-        setTimeout(function(elem){
+        setTimeout(function(elem,item){
             elem.className = "itemhist"
-        },3000,row)
+            if (item.oper == "rent") {
+                elem.className += " return"
+            }
+        },3000,row,item)
     }
 
     ShowError = function (error) {
         var item = document.createElement("div");
         item.innerHTML = "<b> Error: "+error+"</b>";
-        item.className = "errorinfo"
+        item.className = "errorinfo "
         
         tab = document.getElementById("thistory")
         document.body.insertBefore(item,tab)

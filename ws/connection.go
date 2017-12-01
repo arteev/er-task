@@ -24,12 +24,6 @@ type connection struct {
 	send chan []byte
 }
 
-func accept(server Server, conn *websocket.Conn) {
-	c := &connection{server: server, conn: conn, send: make(chan []byte, 256)}
-	server.Append(c)
-	go c.write()
-}
-
 func (c *connection) Send(message []byte) bool {
 	select {
 	case c.send <- message:
@@ -42,6 +36,13 @@ func (c *connection) Send(message []byte) bool {
 func (c *connection) Close() {
 	close(c.send)
 }
+
+func accept(server Server, conn *websocket.Conn) {
+	c := &connection{server: server, conn: conn, send: make(chan []byte, 256)}
+	server.Append(c)
+	go c.write()
+}
+
 func (c *connection) write() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {

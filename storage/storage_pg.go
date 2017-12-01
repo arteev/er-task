@@ -2,8 +2,13 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
+	"time"
+
+	"github.com/lib/pq"
 
 	"github.com/arteev/er-task/model"
 
@@ -13,6 +18,11 @@ import (
 const (
 	opReturn = 0
 	opRent   = 1
+)
+
+const (
+	channel    = "webnotify"
+	pingPeriod = 60 * time.Second
 )
 
 var (
@@ -35,27 +45,82 @@ var (
 //TODO: refactor template Repository
 
 type storagePG struct {
-	db              *sql.DB
+	connection string
+	listener   *pq.Listener
+	notify     chan Notification
+
+	db *sql.DB
+
 	smttrac         *sql.Stmt
 	stmtAddCar      *sql.Stmt
 	stmtFindCarByID *sql.Stmt
 	stmtRentJornal  *sql.Stmt
 }
 
-func (pg *storagePG) Init(connection string) error {
+func (pg *storagePG) Init(connection string, usenotify bool) error {
 	var err error
+
+	pg.connection = connection
 	pg.db, err = sql.Open("postgres", connection)
 	if err != nil {
 		return err
 	}
-
+	if usenotify {
+		pg.notify = make(chan Notification, 50)
+		if err := pg.initlistener(); err != nil {
+			close(pg.notify)
+			return err
+		}
+	}
 	return pg.prepare()
 }
 func (pg *storagePG) Done() error {
 	if pg.db == nil {
 		return nil
 	}
+	if pg.listener != nil {
+		pg.listener.UnlistenAll()
+		close(pg.notify)
+	}
 	return pg.db.Close()
+}
+
+func (pg *storagePG) initlistener() error {
+	pgevent := func(ev pq.ListenerEventType, err error) {
+		if err != nil {
+			fmt.Println("pgbroadcast: ", err.Error())
+		}
+	}
+	pg.listener = pq.NewListener(pg.connection, 10*time.Second, time.Minute, pgevent)
+	go pg.handleNotifications()
+	if err := pg.listener.Listen(channel); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pg *storagePG) handleNotifications() {
+	//TODO: cancel
+	for {
+		select {
+		case n := <-pg.listener.Notify:
+			if n == nil {
+				continue
+			}
+			var notify Notification
+			err := json.Unmarshal([]byte(n.Extra), &notify)
+			if err != nil {
+				log.Println("Error JSON: ", err)
+			} else {
+				fmt.Println("notify: ", notify)
+				go func() { pg.notify <- notify }()
+			}
+		case <-time.After(pingPeriod):
+			go func() {
+				pg.listener.Ping()
+			}()
+		}
+	}
 }
 
 func (pg *storagePG) prepare() (err error) {
@@ -136,11 +201,11 @@ func (pg *storagePG) FindCarByID(id int) (*model.Car, error) {
 	return car, err
 }
 
+func (pg *storagePG) Notify() chan Notification {
+	return pg.notify
+}
+
 func (pg *storagePG) addcar(car model.Car) error {
 	_, err := pg.stmtAddCar.Exec(car.ID, car.Model.ID, car.Regnum)
 	return err
 }
-
-/*func (pg *storagePG) addmodel(m model.CarModel) error {
-	return nil
-}*/

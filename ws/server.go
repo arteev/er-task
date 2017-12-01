@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/arteev/er-task/storage"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -27,6 +29,7 @@ type server struct {
 	append      chan Connection
 	remove      chan Connection
 	broadcast   chan []byte
+	notify      chan storage.Notification
 }
 
 var (
@@ -61,13 +64,15 @@ func (s *server) Remove(c Connection) {
 func (s *server) Broadcast(b []byte) {
 	s.broadcast <- b
 }
-func GetServer() Server {
+
+func GetServer(n chan storage.Notification) Server {
 	onceServer.Do(func() {
 		instanceServer = &server{
 			connections: make(map[Connection]bool),
 			append:      make(chan Connection),
 			remove:      make(chan Connection),
 			broadcast:   make(chan []byte),
+			notify:      n,
 		}
 		go instanceServer.run()
 	})
@@ -76,6 +81,7 @@ func GetServer() Server {
 
 func (s *server) run() {
 	ticker := time.NewTicker(3 * time.Second)
+	what := "rent"
 	for {
 		select {
 		case c := <-s.append:
@@ -93,6 +99,16 @@ func (s *server) run() {
 				}
 			}
 
+		case n := <-s.notify:
+			//Уведомление от хранилища
+
+			nws := notifyRentFromStorage(n)
+			go func() {
+				b, _ := json.Marshal(nws)
+				s.Broadcast(b)
+				log.Println("notify", nws)
+			}()
+
 		case <-ticker.C:
 			//THIS IS TEST
 			log.Println("Ticker")
@@ -103,11 +119,16 @@ func (s *server) run() {
 				Daterent time.Time `json:"daterent"`
 				Dateret  time.Time `json:"dateret"`
 				Agent    string    `json:"agent"`
-			}{"Мопед", "AUDI", "AAA", time.Now(), time.Now(), "Смирнов Иван Иванович"}
+				Oper     string    `json:"oper"`
+			}{"Мопед", "AUDI", "AAA", time.Now(), time.Now(), "Смирнов Иван Иванович", what}
+			if what == "rent" {
+				what = "return"
+			} else {
+				what = "rent"
+			}
 			b, _ := json.Marshal(&m)
 			go func() { s.Broadcast(b) }()
 			log.Println("Ticker done")
-
 		}
 	}
 }

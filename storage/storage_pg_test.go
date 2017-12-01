@@ -13,7 +13,7 @@ var pgConnectionTest = "postgres://postgres:example@192.168.1.43/carrental?sslmo
 func setUp(t *testing.T) Storage {
 	t.Helper()
 	s := GetStorage()
-	err := s.Init(pgConnectionTest)
+	err := s.Init(pgConnectionTest, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,12 +107,12 @@ func TestInitDonePg(t *testing.T) {
 	if err := s.Done(); err != nil {
 		t.Error(err)
 	}
-	err := s.Init("postgres://user:user@127.0.0.1/fake")
+	err := s.Init("postgres://user:user@127.0.0.1/fake", false)
 	if err == nil {
 		t.Error("Expected error")
 	}
 
-	if err = s.Init(pgConnectionTest); err != nil {
+	if err = s.Init(pgConnectionTest, false); err != nil {
 		t.Fatal(err)
 	}
 	clearData(s.(*storagePG), t)
