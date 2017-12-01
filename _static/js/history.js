@@ -15,9 +15,10 @@ window.onload=function() {
         addcolumn(item.model)
         addcolumn( '<a href="/carhistory">'+item.rn+'<a>')
         addcolumn(item.agent)
+        addcolumn(item.ss)
         addcolumn(item.oper=="rent"?"Аренда":"Возврат" )
-        addcolumn(item.daterent)
-        addcolumn(item.dateret)        
+        addcolumn(item.dateoper)    
+      
         tbody.insertBefore(row,tbody.children[0])
         setTimeout(function(elem,item){
             elem.className = "itemhist"
@@ -27,6 +28,7 @@ window.onload=function() {
         },3000,row,item)
     }
 
+    
     ShowError = function (error) {
         var item = document.createElement("div");
         item.innerHTML = "<b> Error: "+error+"</b>";

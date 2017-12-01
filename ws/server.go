@@ -80,8 +80,7 @@ func GetServer(n chan storage.Notification) Server {
 }
 
 func (s *server) run() {
-	ticker := time.NewTicker(3 * time.Second)
-	what := "rent"
+
 	for {
 		select {
 		case c := <-s.append:
@@ -101,34 +100,15 @@ func (s *server) run() {
 
 		case n := <-s.notify:
 			//Уведомление от хранилища
-
 			nws := notifyRentFromStorage(n)
 			go func() {
 				b, _ := json.Marshal(nws)
 				s.Broadcast(b)
 				log.Println("notify", nws)
 			}()
+		case <-time.After(10 * time.Second):
+			log.Println(len(s.connections))
 
-		case <-ticker.C:
-			//THIS IS TEST
-			log.Println("Ticker")
-			m := struct {
-				Type     string    `json:"type"`
-				Model    string    `json:"model"`
-				RN       string    `json:"rn"`
-				Daterent time.Time `json:"daterent"`
-				Dateret  time.Time `json:"dateret"`
-				Agent    string    `json:"agent"`
-				Oper     string    `json:"oper"`
-			}{"Мопед", "AUDI", "AAA", time.Now(), time.Now(), "Смирнов Иван Иванович", what}
-			if what == "rent" {
-				what = "return"
-			} else {
-				what = "rent"
-			}
-			b, _ := json.Marshal(&m)
-			go func() { s.Broadcast(b) }()
-			log.Println("Ticker done")
 		}
 	}
 }
