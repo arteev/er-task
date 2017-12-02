@@ -78,6 +78,7 @@ DECLARE
   notification json;
   REC RECORD;
   eventname text = 'webnotify';
+  idRental int;
 BEGIN
   NEW."DUMMY" = null;
   -- при взятии в аренду удаляем остаток в подразделении
@@ -90,21 +91,21 @@ BEGIN
   -- при возврате подымаем в остаток подразделения
   IF new."OPER" = opReturn THEN
     DELETE FROM "CARGOODS" C
-    WHERE C."CAR" = NEW."CAR";        
-    INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
-    DELETE FROM "CARRENT" WHERE "CAR"=NEW."CAR";
-  END IF;
-  /*
-  Type     string    `json:"type"`
-				Model    string    `json:"model"`
-				RN       string    `json:"rn"`
-				DateOPER time.Time `json:"dateOPER"`
-				Agent    string    `json:"agent"`
-				Oper     string    `json:"oper"`*/
+    WHERE C."CAR" = NEW."CAR";
 
+    INSERT INTO "CARGOODS"("CAR","DEPT") VALUES(NEW."CAR",NEW."DEPT");
+    DELETE FROM "CARRENT" WHERE "CAR"=NEW."CAR"
+    RETURNING "CARRENT"."IDRENTAL" INTO idRental;
+    --связь между записями журнала аренда
+    INSERT INTO "RENTALLINKS"("RIN","ROUT") VALUES (idRental,NEW."ID");
+
+  END IF;
+
+  -- уведомление приложению.
   SELECT T."NAME" "TYPE",M."NAME" "MODEL",C."REGNUM" "RN",R."TSWORK" "DATEOPER",
     A."CODE" "AGENTCODE",A."NAME"||' '||A."MIDDLENAME"||' '||A."FAMILY" "AGENT",
-    CASE R."OPER" WHEN 1 THEN 'rent' ELSE 'return' END "OPER" INTO REC
+    CASE R."OPER" WHEN 1 THEN 'rent' ELSE 'return' END "OPER",
+    D."NAME" "DEPT" INTO REC
   FROM "CARTYPE" T, "MODEL" M, "CAR" C, "AGENT" A, "DEPARTMENT" D, "RENTAL" R
   WHERE R."CAR" = C."ID"
   AND T."ID" = M."CTYPE"
@@ -482,6 +483,48 @@ CREATE TABLE "RENTAL" (
 ALTER TABLE "RENTAL" OWNER TO postgres;
 
 --
+-- Name: RENTALLINKS; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE "RENTALLINKS" (
+    "ID" integer NOT NULL,
+    "RIN" integer NOT NULL,
+    "ROUT" integer NOT NULL
+);
+
+
+ALTER TABLE "RENTALLINKS" OWNER TO postgres;
+
+--
+-- Name: TABLE "RENTALLINKS"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE "RENTALLINKS" IS 'Связь записей журнала RENTAL ';
+
+
+--
+-- Name: RENTALLINKS_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE "RENTALLINKS_ID_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE "RENTALLINKS_ID_seq" OWNER TO postgres;
+
+--
+-- Name: RENTALLINKS_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE "RENTALLINKS_ID_seq" OWNED BY "RENTALLINKS"."ID";
+
+
+--
 -- Name: RENTAL_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -522,6 +565,13 @@ ALTER TABLE ONLY "LOCATION" ALTER COLUMN "ID" SET DEFAULT nextval('"LOCATION_ID_
 --
 
 ALTER TABLE ONLY "RENTAL" ALTER COLUMN "ID" SET DEFAULT nextval('"RENTAL_ID_seq"'::regclass);
+
+
+--
+-- Name: RENTALLINKS ID; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTALLINKS" ALTER COLUMN "ID" SET DEFAULT nextval('"RENTALLINKS_ID_seq"'::regclass);
 
 
 --
@@ -597,66 +647,81 @@ COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT", "DUMMY") FR
 
 
 --
+-- Data for Name: RENTALLINKS; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY "RENTALLINKS" ("ID", "RIN", "ROUT") FROM stdin;
+\.
+
+
+--
 -- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"AGENT_ID_seq"', 301, true);
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 851, true);
 
 
 --
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 2959, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 7805, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 111, true);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 339, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 32, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 65, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 4276, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 8261, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 547, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 1405, true);
 
 
 --
 -- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"LOCATION_ID_seq"', 1530, true);
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 2205, true);
 
 
 --
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 823, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 1956, true);
+
+
+--
+-- Name: RENTALLINKS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 1, true);
 
 
 --
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 345, true);
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1056, true);
 
 
 --
@@ -737,6 +802,14 @@ ALTER TABLE ONLY "DEPARTMENT"
 
 ALTER TABLE ONLY "MODEL"
     ADD CONSTRAINT "MODEL_ID" PRIMARY KEY ("ID");
+
+
+--
+-- Name: RENTALLINKS RENTALLINKS_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTALLINKS"
+    ADD CONSTRAINT "RENTALLINKS_pkey" PRIMARY KEY ("ID");
 
 
 --
@@ -875,6 +948,22 @@ ALTER TABLE ONLY "CARRENT"
 
 ALTER TABLE ONLY "RENTAL"
     ADD CONSTRAINT rental_agent_id_fk FOREIGN KEY ("AGENT") REFERENCES "AGENT"("ID");
+
+
+--
+-- Name: RENTALLINKS rentallinks_rental_id1_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTALLINKS"
+    ADD CONSTRAINT rentallinks_rental_id1_fk FOREIGN KEY ("RIN") REFERENCES "RENTAL"("ID") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: RENTALLINKS rentallinks_rental_id2_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY "RENTALLINKS"
+    ADD CONSTRAINT rentallinks_rental_id2_fk FOREIGN KEY ("ROUT") REFERENCES "RENTAL"("ID") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
