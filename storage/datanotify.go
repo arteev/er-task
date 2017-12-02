@@ -1,20 +1,15 @@
-package ws
+package storage
 
-import "time"
-import "github.com/arteev/er-task/storage"
+import (
+	"time"
 
-type notifyRentWS struct {
-	Type     string    `json:"type"`
-	Model    string    `json:"model"`
-	RN       string    `json:"rn"`
-	Dateoper time.Time `json:"dateoper"`
-	Agent    string    `json:"agent"`
-	SS       string    `json:"ss"`
-	Oper     string    `json:"oper"`
-}
+	"github.com/arteev/er-task/model"
+)
 
-func notifyRentFromStorage(n storage.Notification) *notifyRentWS {
-	ret := &notifyRentWS{}
+const pglayout = "2006-01-02T15:04:05.999999"
+
+func RentDataFromStorage(n Notification) *model.RentData {
+	ret := &model.RentData{}
 	if val, ok := n.Data["TYPE"]; ok {
 		ret.Type = val.(string)
 	}
@@ -35,9 +30,10 @@ func notifyRentFromStorage(n storage.Notification) *notifyRentWS {
 	}
 	if val, ok := n.Data["DATEOPER"]; ok {
 		var err error
-		ret.Dateoper, err = time.Parse(time.RFC3339, val.(string))
+		ret.Dateoper, err = time.Parse(pglayout, val.(string))
 		if err != nil {
 			//log it
+			//log.Println(err)
 		}
 	}
 	return ret

@@ -3,9 +3,12 @@ window.onload=function() {
     const idElemHistory = "tbodyhistory";
 
     tbody = document.getElementById(idElemHistory)
-    function appendItem(item) {
+    function appendItem(item,isnew) {
         row = document.createElement("tr")
-        row.className = "newitemhist"
+        row.className = "itemhist"
+        if (item.oper == "rent") {
+            row.className += " return"
+        }
         addcolumn = function(value) {
             el = document.createElement("td")
             el.innerHTML =  value
@@ -20,15 +23,25 @@ window.onload=function() {
         addcolumn(item.dateoper)    
       
         tbody.insertBefore(row,tbody.children[0])
-        setTimeout(function(elem,item){
-            elem.className = "itemhist"
-            if (item.oper == "rent") {
-                elem.className += " return"
-            }
-        },3000,row,item)
+        if (isnew) {
+            row.className = "newitemhist"
+        
+            setTimeout(function(elem,item){
+                elem.className = "itemhist"
+                if (item.oper == "rent") {
+                    elem.className += " return"
+                }
+            },3000,row,item)
+        }
     }
 
-    
+    $.getJSON( "/api/v1/rentjournal", function( data ) {               
+        $.each( data.data.reverse(), function( key,val ) {
+            appendItem(val,false)
+        });              
+    });
+
+
     ShowError = function (error) {
         var item = document.createElement("div");
         item.innerHTML = "<b> Error: "+error+"</b>";
@@ -45,7 +58,7 @@ window.onload=function() {
             ShowError("WebSocket connection closed.")            
         }
         conn.onmessage = function(evt) {
-            appendItem( JSON.parse(evt.data))
+            appendItem( JSON.parse(evt.data),true)
         }
     } else {
         ShowError("Error: browser does not support WebSockets")

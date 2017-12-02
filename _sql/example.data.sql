@@ -1,4 +1,6 @@
 -- Небольшой набор тестовых данных для CarRental
+UPDATE "RENTAL" SET "DUMMY"=1;
+DELETE FROM "RENTAL";
 DELETE  FROM "CARGOODS";
 DELETE FROM "CAR";
 DELETE FROM "AGENT";

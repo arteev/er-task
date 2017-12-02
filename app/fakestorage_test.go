@@ -124,6 +124,12 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	return nil
 }
 
+//TODO :!
+func (pg *FakeStorage) GetRentJornal() ([]model.RentData, error) {
+	return nil, nil
+
+}
+
 func (pg *FakeStorage) Notify() chan storage.Notification {
 	//TODO:
 	return nil

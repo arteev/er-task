@@ -65,6 +65,12 @@ func (a *App) init() http.Handler {
 			Methods: []string{"GET"},
 			Handler: a.AutoReloadTemplates(a.Index),
 		},
+		{
+			IsAPI:   true,
+			Path:    "/rentjournal",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.RentJournal),
+		},
 		// websocket
 		{
 			IsAPI:   false,

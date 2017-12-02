@@ -25,23 +25,6 @@ const (
 	pingPeriod = 60 * time.Second
 )
 
-var (
-	sqlTrack = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES(  
-		(SELECT "ID" FROM "CAR" WHERE "REGNUM"=$1),
-		POINT($2,$3))`
-	sqlAddCar   = `INSERT INTO "CAR"("ID","MODEL","REGNUM") VALUES ($1,$2,$3)`
-	sqlFindByID = `SELECT c."ID", c."REGNUM", c."MODEL", m."NAME" "MODELNAME" FROM "CAR" c ,"MODEL" m
-	WHERE
-		c."MODEL" = m."ID"
-		and c."ID"=$1`
-
-	sqlRentJornal = `INSERT INTO "RENTAL"("TSWORK","OPER","CAR","DEPT","AGENT") VALUES (
-		CURRENT_TIMESTAMP,$1,
-		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = $2),
-		(SELECT "DEPARTMENT"."ID" FROM "DEPARTMENT" WHERE "DEPARTMENT"."NAME" = $3),
-		(SELECT "AGENT"."ID" FROM "AGENT" WHERE "AGENT"."CODE" = $4))`
-)
-
 //TODO: refactor template Repository
 
 type storagePG struct {
@@ -52,8 +35,8 @@ type storagePG struct {
 	db *sql.DB
 
 	smttrac         *sql.Stmt
-	stmtAddCar      *sql.Stmt
 	stmtFindCarByID *sql.Stmt
+	stmtRentAction  *sql.Stmt
 	stmtRentJornal  *sql.Stmt
 }
 
@@ -128,19 +111,18 @@ func (pg *storagePG) prepare() (err error) {
 	if err != nil {
 		return err
 	}
-	pg.stmtAddCar, err = pg.db.Prepare(sqlAddCar)
-	if err != nil {
-		return err
-	}
-
 	pg.stmtFindCarByID, err = pg.db.Prepare(sqlFindByID)
 	if err != nil {
 		return err
 	}
-	pg.stmtRentJornal, err = pg.db.Prepare(sqlRentJornal)
+	pg.stmtRentAction, err = pg.db.Prepare(sqlRentAction)
 	if err != nil {
 		return err
 
+	}
+	pg.stmtRentJornal, err = pg.db.Prepare(sqlRentJornal)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -157,7 +139,7 @@ func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) e
 
 //Взять в аренду ТС
 func (pg *storagePG) Rent(rn string, dep string, agn string) error {
-	_, err := pg.stmtRentJornal.Exec(opRent, rn, dep, agn)
+	_, err := pg.stmtRentAction.Exec(opRent, rn, dep, agn)
 	if err != nil {
 		return err
 	}
@@ -167,7 +149,7 @@ func (pg *storagePG) Rent(rn string, dep string, agn string) error {
 
 //Вернуть ТС
 func (pg *storagePG) Return(rn string, dep string, agn string) error {
-	_, err := pg.stmtRentJornal.Exec(opReturn, rn, dep, agn)
+	_, err := pg.stmtRentAction.Exec(opReturn, rn, dep, agn)
 	if err != nil {
 		return err
 	}
@@ -205,7 +187,21 @@ func (pg *storagePG) Notify() chan Notification {
 	return pg.notify
 }
 
-func (pg *storagePG) addcar(car model.Car) error {
-	_, err := pg.stmtAddCar.Exec(car.ID, car.Model.ID, car.Regnum)
-	return err
+func (pg *storagePG) GetRentJornal() ([]model.RentData, error) {
+	rows, err := pg.stmtRentJornal.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	rds := make([]model.RentData, 0)
+	for rows.Next() {
+		var id int
+		r := &model.RentData{}
+		err := rows.Scan(&id, &r.Type, &r.Model, &r.RN, &r.Dateoper, &r.SS, &r.Agent, &r.Oper)
+		if err != nil {
+			return nil, err
+		}
+		rds = append(rds, *r)
+	}
+	return rds, nil
 }

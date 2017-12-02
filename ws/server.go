@@ -100,7 +100,7 @@ func (s *server) run() {
 
 		case n := <-s.notify:
 			//Уведомление от хранилища
-			nws := notifyRentFromStorage(n)
+			nws := storage.RentDataFromStorage(n)
 			go func() {
 				b, _ := json.Marshal(nws)
 				s.Broadcast(b)

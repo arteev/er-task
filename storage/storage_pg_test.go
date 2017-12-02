@@ -55,6 +55,19 @@ func clearData(s *storagePG, t *testing.T) {
 	}
 }
 
+//for tests
+func addcarstorage(pg *storagePG, car model.Car) error {
+	_, err := pg.db.Exec(`INSERT INTO "CAR"("ID","MODEL","REGNUM") VALUES ($1,$2,$3)`, car.ID, car.Model.ID, car.Regnum)
+	if err != nil {
+		return err
+	}
+	_, err = pg.db.Exec(`INSERT INTO "CARGOODS"("DEPT","CAR") VALUES(1,$1)`, car.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func addCar(s *storagePG, id int, t *testing.T) model.Car {
 	t.Helper()
 	c := model.Car{
@@ -67,7 +80,7 @@ func addCar(s *storagePG, id int, t *testing.T) model.Car {
 		},
 		Regnum: fmt.Sprintf("X%dXX", id),
 	}
-	if err := s.addcar(c); err != nil {
+	if err := addcarstorage(s, c); err != nil {
 		t.Fatal(err)
 
 	}
@@ -199,5 +212,29 @@ func TestRentPg(t *testing.T) {
 	}
 	if !ExistsRentReturn(t, spg, car.Regnum, "dep1", "000-000-000 01", false) {
 		t.Error("Data not found for return")
+	}
+
+	//тест GetRentJornal
+	rd, err := s.GetRentJornal()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(rd) != 2 {
+		t.Errorf("Expected count rent jornal %d, got %d", 2, len(rd))
+	}
+
+	want := "X1XX"
+	if rd[0].RN != want {
+		t.Errorf("Expected %q, got %q", want, rd[0].RN)
+	}
+	if rd[1].RN != want {
+		t.Errorf("Expected %q, got %q", want, rd[1].RN)
+	}
+	if rd[0].Oper != "return" {
+		t.Errorf("Expected %q, got %q", "return", rd[0].Oper)
+	}
+	if rd[1].Oper != "rent" {
+		t.Errorf("Expected %q, got %q", "return", rd[1].Oper)
 	}
 }

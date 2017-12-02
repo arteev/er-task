@@ -1,0 +1,29 @@
+package storage
+
+var (
+	sqlTrack = `INSERT INTO "public"."LOCATION" ("CAR","POINT") VALUES(  
+		(SELECT "ID" FROM "CAR" WHERE "REGNUM"=$1),
+		POINT($2,$3))`
+
+	sqlFindByID = `SELECT c."ID", c."REGNUM", c."MODEL", m."NAME" "MODELNAME" FROM "CAR" c ,"MODEL" m
+	WHERE
+		c."MODEL" = m."ID"
+		and c."ID"=$1`
+
+	sqlRentAction = `INSERT INTO "RENTAL"("TSWORK","OPER","CAR","DEPT","AGENT") VALUES (
+		CURRENT_TIMESTAMP,$1,
+		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = $2),
+		(SELECT "DEPARTMENT"."ID" FROM "DEPARTMENT" WHERE "DEPARTMENT"."NAME" = $3),
+		(SELECT "AGENT"."ID" FROM "AGENT" WHERE "AGENT"."CODE" = $4))`
+
+	sqlRentJornal = `  SELECT R."ID", T."NAME" "TYPE",M."NAME" "MODEL",C."REGNUM" "RN",R."TSWORK" "DATEOPER",
+    A."CODE" "AGENTCODE",A."NAME"||' '||A."MIDDLENAME"||' '||A."FAMILY" "AGENT",
+    CASE R."OPER" WHEN 1 THEN 'rent' ELSE 'return' END "OPER"
+	FROM "CARTYPE" T, "MODEL" M, "CAR" C, "AGENT" A, "DEPARTMENT" D, "RENTAL" R
+	WHERE R."CAR" = C."ID"
+	AND T."ID" = M."CTYPE"
+	AND C."MODEL" = M."ID"
+	AND R."AGENT" = A."ID"
+	AND D."ID" = R."DEPT"
+	ORDER BY R."ID" DESC`
+)

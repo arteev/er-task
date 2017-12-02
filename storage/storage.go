@@ -25,6 +25,9 @@ type Storage interface {
 	//Поиск ТС по ID
 	FindCarByID(id int) (*model.Car, error)
 
+	//Получение истории аренды
+	GetRentJornal() ([]model.RentData, error)
+
 	//Уведомление от хранилища о событиях
 	Notify() chan Notification
 }
