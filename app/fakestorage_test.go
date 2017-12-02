@@ -15,30 +15,33 @@ type point struct {
 }
 
 type FakeStorage struct {
-	invokedTrack    bool
-	invokedFindByID bool
-	invokedRent     bool
-	invokedReturn   bool
+	invokedTrack       bool
+	invokedFindByID    bool
+	invokedRent        bool
+	invokedReturn      bool
+	invokedRentJournal bool
 
 	sync.RWMutex
-	cars        map[string]model.Car
-	carid       map[int]model.Car
-	agent       map[string]model.Agent
-	department  map[string]model.Department
-	carmodel    map[string]model.CarModel
-	rentjournal map[string]struct{}
-	track       map[string][]point
+	cars           map[string]model.Car
+	carid          map[int]model.Car
+	agent          map[string]model.Agent
+	department     map[string]model.Department
+	carmodel       map[string]model.CarModel
+	rentjournal    map[string]model.RentData
+	rentjournalArr []model.RentData
+	track          map[string][]point
 }
 
 func initFakeStorage() storage.Storage {
 	return &FakeStorage{
-		cars:        make(map[string]model.Car),
-		carid:       make(map[int]model.Car),
-		department:  make(map[string]model.Department),
-		agent:       make(map[string]model.Agent),
-		carmodel:    make(map[string]model.CarModel),
-		rentjournal: make(map[string]struct{}),
-		track:       make(map[string][]point),
+		cars:           make(map[string]model.Car),
+		carid:          make(map[int]model.Car),
+		department:     make(map[string]model.Department),
+		agent:          make(map[string]model.Agent),
+		carmodel:       make(map[string]model.CarModel),
+		rentjournal:    make(map[string]model.RentData),
+		rentjournalArr: make([]model.RentData, 0),
+		track:          make(map[string][]point),
 	}
 }
 
@@ -100,7 +103,16 @@ func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
 	if !exist {
 		return errors.New("Agent not found")
 	}
-	s.rentjournal[car.Regnum+d.Name+a.Code+"Rent"] = struct{}{}
+
+	rj := model.RentData{
+		RN:    rn,
+		Agent: agn,
+		//TODO: Dep
+		//Dep: dep
+	}
+	s.rentjournal[car.Regnum+d.Name+a.Code+"Rent"] = rj
+	s.rentjournalArr = append(s.rentjournalArr, rj)
+
 	return nil
 }
 
@@ -120,14 +132,26 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	if !exist {
 		return errors.New("Agent not found")
 	}
-	s.rentjournal[car.Regnum+d.Name+a.Code+"Return"] = struct{}{}
+	rj := model.RentData{
+		RN:    rn,
+		Agent: agn,
+		//TODO: Dep
+		//Dep: dep
+	}
+	s.rentjournal[car.Regnum+d.Name+a.Code+"Return"] = rj
+	s.rentjournalArr = append(s.rentjournalArr, rj)
 	return nil
 }
 
-//TODO :!
-func (pg *FakeStorage) GetRentJornal() ([]model.RentData, error) {
-	return nil, nil
-
+func (s *FakeStorage) GetRentJornal() ([]model.RentData, error) {
+	s.Lock()
+	defer s.Unlock()
+	s.invokedRentJournal = true
+	rds := make([]model.RentData, 0)
+	for i := len(s.rentjournalArr) - 1; i >= 0; i-- {
+		rds = append(rds, s.rentjournalArr[i])
+	}
+	return rds, nil
 }
 
 func (pg *FakeStorage) Notify() chan storage.Notification {
@@ -185,6 +209,7 @@ func (s *FakeStorage) clear() {
 	s.department = make(map[string]model.Department)
 	s.agent = make(map[string]model.Agent)
 	s.carmodel = make(map[string]model.CarModel)
-	s.rentjournal = make(map[string]struct{})
+	s.rentjournal = make(map[string]model.RentData)
+	s.rentjournalArr = make([]model.RentData, 0)
 	s.track = make(map[string][]point)
 }

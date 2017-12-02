@@ -14,12 +14,14 @@ window.onload=function() {
             el.innerHTML =  value
             row.appendChild(el)
         } 
+        addcolumn(item.oper=="rent"?"Аренда":"Возврат" )
+        addcolumn(item.dept)
         addcolumn(item.type)              
         addcolumn(item.model)
         addcolumn( '<a href="/carhistory">'+item.rn+'<a>')
         addcolumn(item.agent)
         addcolumn(item.ss)
-        addcolumn(item.oper=="rent"?"Аренда":"Возврат" )
+        
         addcolumn(item.dateoper)    
       
         tbody.insertBefore(row,tbody.children[0])

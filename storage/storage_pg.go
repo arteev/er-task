@@ -197,7 +197,7 @@ func (pg *storagePG) GetRentJornal() ([]model.RentData, error) {
 	for rows.Next() {
 		var id int
 		r := &model.RentData{}
-		err := rows.Scan(&id, &r.Type, &r.Model, &r.RN, &r.Dateoper, &r.SS, &r.Agent, &r.Oper)
+		err := rows.Scan(&id, &r.Type, &r.Model, &r.RN, &r.Dateoper, &r.SS, &r.Agent, &r.Oper, &r.Dept)
 		if err != nil {
 			return nil, err
 		}

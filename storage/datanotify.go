@@ -9,6 +9,7 @@ import (
 const pglayout = "2006-01-02T15:04:05.999999"
 
 func RentDataFromStorage(n Notification) *model.RentData {
+	//TODO: refactor this
 	ret := &model.RentData{}
 	if val, ok := n.Data["TYPE"]; ok {
 		ret.Type = val.(string)
@@ -35,6 +36,9 @@ func RentDataFromStorage(n Notification) *model.RentData {
 			//log it
 			//log.Println(err)
 		}
+	}
+	if val, ok := n.Data["DEPT"]; ok {
+		ret.Dept = val.(string)
 	}
 	return ret
 }
