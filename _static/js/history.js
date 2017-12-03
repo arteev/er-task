@@ -37,11 +37,15 @@ window.onload=function() {
         }
     }
 
-    $.getJSON( "/api/v1/rentjournal", function( data ) {               
-        $.each( data.data.reverse(), function( key,val ) {
-            appendItem(val,false)
-        });              
-    });
+    reload = function()
+    {
+        $("#tbodyhistory").children().remove()
+        $.getJSON( "/api/v1/rentjournal", function( data ) {               
+            $.each( data.data.reverse(), function( key,val ) {
+                appendItem(val,false)
+            });              
+        });
+    }
 
 
     ShowError = function (error) {
@@ -54,17 +58,35 @@ window.onload=function() {
         
     }
 
-    if (window["WebSocket"]) {
-        conn = new WebSocket("ws://"+ document.location.host+"/ws");
-        conn.onclose = function(evt) {
-            ShowError("WebSocket connection closed.")            
+    
+    startWS = function() {
+        if (window["WebSocket"]) {
+            conn = new WebSocket("ws://"+ document.location.host+"/ws");
+            conn.onopen = function() {
+                $(".errorinfo").remove();
+                reload();
+            };
+            conn.onclose = function(evt) {
+                ShowError("WebSocket connection closed. Retry after 5 sec.")
+                conn = null
+                setTimeout(function(){                    
+                    startWS();
+                },5000)
+            }
+            conn.onmessage = function(evt) {
+                appendItem( JSON.parse(evt.data),true);
+            }
+        } else {
+            ShowError("Error: browser does not support WebSockets")
         }
-        conn.onmessage = function(evt) {
-            appendItem( JSON.parse(evt.data),true)
-        }
-    } else {
-        ShowError("Error: browser does not support WebSockets")
     }
+
+    
+    startWS()
+
+    $("#btn-refresh").click(function(){
+        reload();
+    })
 
     
 }

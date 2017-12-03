@@ -11,6 +11,12 @@ func (a *App) Index(w http.ResponseWriter, r *http.Request) {
 	templs.ExecuteTemplate(w, "index.gohtml", nil)
 }
 
+func (a *App) Car(w http.ResponseWriter, r *http.Request) {
+
+	//TODO: читать var
+	templs.ExecuteTemplate(w, "car.gohtml", nil)
+}
+
 var muTemp sync.Mutex
 
 func (a *App) AutoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {

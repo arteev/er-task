@@ -66,6 +66,13 @@ func (a *App) init() http.Handler {
 			Handler: a.AutoReloadTemplates(a.Index),
 		},
 		{
+			IsAPI:   false,
+			Path:    "/car",
+			Methods: []string{"GET"},
+			Handler: a.AutoReloadTemplates(a.Car),
+		},
+
+		{
 			IsAPI:   true,
 			Path:    "/rentjournal",
 			Methods: []string{"GET"},
