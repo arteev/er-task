@@ -1,0 +1,31 @@
+{{template "header" .}}
+<h3>История проката транспортного средства</h3> 
+<script src="/static/js/car.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/js/style.css" media="screen" />
+
+<form action="">
+    <div>
+        <datalist id="carslist">           
+        </datalist>
+        <label >Выберете ТС:
+            <input list="carslist" name="rn" id="carsearch" placeholder="Введите номер..."  {{if .RN}}value="{{.RN}}"{{end}}>
+        </label>        
+        <button id="btn-show" >Показать</button>    
+        <button id="btn-clear" >Сброс</button>    
+    </div>
+</form>
+<br/>
+<table id="thistory" border=1>
+    <thead>
+        <tr>
+            <td>Операция</td>
+            <td>Точка</td>           
+            <td>ФИО</td>
+            <td>Код агента</td>            
+            <td>Дата операции</td>                
+        </tr>
+    </thead>
+    <tbody id="tbodyhistory">
+    </tbody>
+</table>
+{{template "footer" .}}    

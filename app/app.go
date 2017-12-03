@@ -59,6 +59,26 @@ func (a *App) init() http.Handler {
 			Methods: []string{"POST"},
 			Handler: ErrorHandler(a.Return),
 		},
+
+		{
+			IsAPI:   true,
+			Path:    "/rentjournal",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.RentJournal),
+		},
+		{
+			IsAPI:   true,
+			Path:    "/rentjournal/{rn}",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.RentJournal),
+		},
+		{
+			IsAPI:   true,
+			Path:    "/cars",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.Cars),
+		},
+		//render
 		{
 			IsAPI:   false,
 			Path:    "/",
@@ -71,12 +91,11 @@ func (a *App) init() http.Handler {
 			Methods: []string{"GET"},
 			Handler: a.AutoReloadTemplates(a.Car),
 		},
-
 		{
-			IsAPI:   true,
-			Path:    "/rentjournal",
+			IsAPI:   false,
+			Path:    "/car/{rn}",
 			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.RentJournal),
+			Handler: a.AutoReloadTemplates(a.Car),
 		},
 		// websocket
 		{

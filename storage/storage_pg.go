@@ -38,6 +38,7 @@ type storagePG struct {
 	stmtFindCarByID *sql.Stmt
 	stmtRentAction  *sql.Stmt
 	stmtRentJornal  *sql.Stmt
+	stmtCars        *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string, usenotify bool) error {
@@ -124,6 +125,10 @@ func (pg *storagePG) prepare() (err error) {
 	if err != nil {
 		return err
 	}
+	pg.stmtCars, err = pg.db.Prepare(sqlCars)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -187,8 +192,9 @@ func (pg *storagePG) Notify() chan Notification {
 	return pg.notify
 }
 
-func (pg *storagePG) GetRentJornal() ([]model.RentData, error) {
-	rows, err := pg.stmtRentJornal.Query()
+//TODO: test it 1 car
+func (pg *storagePG) GetRentJornal(rn string) ([]model.RentData, error) {
+	rows, err := pg.stmtRentJornal.Query(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -204,4 +210,23 @@ func (pg *storagePG) GetRentJornal() ([]model.RentData, error) {
 		rds = append(rds, *r)
 	}
 	return rds, nil
+}
+
+func (pg *storagePG) GetCars() ([]model.Car, error) {
+	rows, err := pg.stmtCars.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	cars := make([]model.Car, 0)
+	for rows.Next() {
+		car := model.Car{}
+		//TODO : IDs
+		err := rows.Scan(&car.ID, &car.Regnum, &car.Model.Name, &car.Model.Type.Code, &car.Model.Type.Name)
+		if err != nil {
+			return nil, err
+		}
+		cars = append(cars, car)
+	}
+	return cars, nil
 }

@@ -1,7 +1,7 @@
 package model
 
 type Car struct {
-	ID     int
-	Regnum string
-	Model  CarModel
+	ID     int      `json:"-"`
+	Regnum string   `json:"rn"`
+	Model  CarModel `json:"model"`
 }

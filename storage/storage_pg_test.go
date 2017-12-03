@@ -33,7 +33,7 @@ func setUp(t *testing.T) Storage {
 	return s
 }
 
-func clearData(s *storagePG, t *testing.T) {
+func tearDown(s *storagePG, t *testing.T) {
 	sqls := []string{
 		`UPDATE "RENTAL" SET "DUMMY"=1`,
 		`DELETE FROM "CARGOODS"`,
@@ -128,7 +128,7 @@ func TestInitDonePg(t *testing.T) {
 	if err = s.Init(pgConnectionTest, false); err != nil {
 		t.Fatal(err)
 	}
-	clearData(s.(*storagePG), t)
+	tearDown(s.(*storagePG), t)
 
 	err = s.Done()
 	if err != nil {
@@ -140,7 +140,7 @@ func TestFindCar(t *testing.T) {
 	s := setUp(t)
 	spg := s.(*storagePG)
 	defer s.Done()
-	defer clearData(spg, t)
+	defer tearDown(spg, t)
 	_, err := s.FindCarByID(1)
 	if err == nil {
 		t.Error("Expected error")
@@ -159,7 +159,7 @@ func TestTrackPg(t *testing.T) {
 	s := setUp(t)
 	spg := s.(*storagePG)
 	defer s.Done()
-	defer clearData(spg, t)
+	defer tearDown(spg, t)
 	//empty DB
 	car := model.Car{}
 
@@ -190,7 +190,7 @@ func TestRentPg(t *testing.T) {
 	s := setUp(t)
 	spg := s.(*storagePG)
 	defer s.Done()
-	defer clearData(spg, t)
+	defer tearDown(spg, t)
 
 	//see:setUp
 	err := s.Rent("000", "dep1", "000-000-000 01")
@@ -214,14 +214,14 @@ func TestRentPg(t *testing.T) {
 		t.Error("Data not found for return")
 	}
 
-	//тест GetRentJornal
-	rd, err := s.GetRentJornal()
+	//test GetRentJornal
+	rd, err := s.GetRentJornal("")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if len(rd) != 2 {
-		t.Errorf("Expected count rent jornal %d, got %d", 2, len(rd))
+		t.Fatalf("Expected count rent jornal %d, got %d", 2, len(rd))
 	}
 
 	want := "X1XX"
@@ -237,4 +237,34 @@ func TestRentPg(t *testing.T) {
 	if rd[1].Oper != "rent" {
 		t.Errorf("Expected %q, got %q", "return", rd[1].Oper)
 	}
+}
+
+func TestCars(t *testing.T) {
+	s := setUp(t)
+	spg := s.(*storagePG)
+	defer s.Done()
+	defer tearDown(spg, t)
+	cars, err := s.GetCars()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cars) != 0 {
+		t.Error("Expected empty list of cars")
+	}
+	addCar(spg, 1, t)
+	addCar(spg, 2, t)
+	cars, err = s.GetCars()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cars) == 0 {
+		t.Errorf("Expected len(cars)=%d, got %d", 2, len(cars))
+	}
+	if want := "X1XX"; cars[0].Regnum != want {
+		t.Errorf("Expected %q, got %q", cars[0].Regnum, want)
+	}
+	if want := "X2XX"; cars[1].Regnum != want {
+		t.Errorf("Expected %q, got %q", cars[0].Regnum, want)
+	}
+	//TODO: check others fields
 }

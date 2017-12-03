@@ -15,8 +15,17 @@ type RentData struct {
 	Dept     string    `json:"dept"`
 }
 
+type Response struct {
+	ContentType string `json:"content"`
+	Error       string `json:"error"`
+	Message     string `json:"message"`
+}
 type RentDataResponse struct {
-	Error   string     `json:"error"`
-	Message string     `json:"message"`
-	Data    []RentData `json:"data"`
+	Response
+	Data []RentData `json:"data"`
+}
+
+type CarsResponse struct {
+	Response
+	Data []Car `json:"data"`
 }

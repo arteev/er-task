@@ -143,7 +143,8 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	return nil
 }
 
-func (s *FakeStorage) GetRentJornal() ([]model.RentData, error) {
+//TODO fix it when once car
+func (s *FakeStorage) GetRentJornal(rn string) ([]model.RentData, error) {
 	s.Lock()
 	defer s.Unlock()
 	s.invokedRentJournal = true
@@ -154,9 +155,14 @@ func (s *FakeStorage) GetRentJornal() ([]model.RentData, error) {
 	return rds, nil
 }
 
-func (pg *FakeStorage) Notify() chan storage.Notification {
+func (s *FakeStorage) Notify() chan storage.Notification {
 	//TODO:
 	return nil
+}
+
+//TODO: test it
+func (s *FakeStorage) GetCars() ([]model.Car, error) {
+	return nil, nil
 }
 
 //helper for test. Add/Update Department
@@ -171,7 +177,8 @@ func (s *FakeStorage) adddepart(id int, name string) model.Department {
 func (s *FakeStorage) addmodel(id int, name string) model.CarModel {
 	s.Lock()
 	defer s.Unlock()
-	s.carmodel[name] = model.CarModel{id, name}
+	//TODO: type car
+	s.carmodel[name] = model.CarModel{ID: id, Name: name}
 	return s.carmodel[name]
 }
 
