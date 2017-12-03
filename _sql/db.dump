@@ -658,70 +658,70 @@ COPY "RENTALLINKS" ("ID", "RIN", "ROUT") FROM stdin;
 -- Name: AGENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"AGENT_ID_seq"', 851, true);
+SELECT pg_catalog.setval('"AGENT_ID_seq"', 1335, true);
 
 
 --
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 7805, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 11789, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 339, true);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 465, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 65, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 95, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 8261, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 11595, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 1405, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 2185, true);
 
 
 --
 -- Name: LOCATION_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"LOCATION_ID_seq"', 2205, true);
+SELECT pg_catalog.setval('"LOCATION_ID_seq"', 2529, true);
 
 
 --
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 1956, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 2986, true);
 
 
 --
 -- Name: RENTALLINKS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 1, true);
+SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 127, true);
 
 
 --
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1056, true);
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1417, true);
 
 
 --
