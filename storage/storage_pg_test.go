@@ -237,6 +237,33 @@ func TestRentPg(t *testing.T) {
 	if rd[1].Oper != "rent" {
 		t.Errorf("Expected %q, got %q", "return", rd[1].Oper)
 	}
+
+	//GetRentJornal by car RN
+	car2 := addCar(spg, 2, t)
+	err = s.Rent(car2.Regnum, "dep1", "000-000-000 01")
+	if err != nil {
+		t.Error(err)
+	}
+	rd, err = s.GetRentJornal("X2XX")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want = "X2XX"
+	if len(rd) != 1 {
+		t.Fatalf("Expected count rent jornal %d, got %d", 1, len(rd))
+	}
+	if rd[0].RN != want {
+		t.Errorf("Expected %q, got %q", want, rd[0].RN)
+	}
+
+	//GetRentJornal not found
+	rd, err = s.GetRentJornal("X3XX")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(rd) != 0 {
+		t.Fatalf("Expected count rent jornal %d, got %d", 0, len(rd))
+	}
 }
 
 func TestCars(t *testing.T) {

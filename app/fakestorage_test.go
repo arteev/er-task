@@ -20,6 +20,7 @@ type FakeStorage struct {
 	invokedRent        bool
 	invokedReturn      bool
 	invokedRentJournal bool
+	invokedCars        bool
 
 	sync.RWMutex
 	cars           map[string]model.Car
@@ -143,14 +144,17 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	return nil
 }
 
-//TODO fix it when once car
 func (s *FakeStorage) GetRentJornal(rn string) ([]model.RentData, error) {
 	s.Lock()
 	defer s.Unlock()
 	s.invokedRentJournal = true
 	rds := make([]model.RentData, 0)
+
 	for i := len(s.rentjournalArr) - 1; i >= 0; i-- {
-		rds = append(rds, s.rentjournalArr[i])
+		if s.rentjournalArr[i].RN == rn || rn == "" {
+			rds = append(rds, s.rentjournalArr[i])
+		}
+
 	}
 	return rds, nil
 }
@@ -160,9 +164,16 @@ func (s *FakeStorage) Notify() chan storage.Notification {
 	return nil
 }
 
-//TODO: test it
 func (s *FakeStorage) GetCars() ([]model.Car, error) {
-	return nil, nil
+	s.Lock()
+	defer s.Unlock()
+	s.invokedCars = true
+	//WARN: выдает записи не в той последовательности
+	cars := make([]model.Car, 0)
+	for _, car := range s.cars {
+		cars = append(cars, car)
+	}
+	return cars, nil
 }
 
 //helper for test. Add/Update Department

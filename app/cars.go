@@ -9,7 +9,6 @@ import (
 )
 
 //Cars - handler for api. Returns list of the cars
-//TODO: test it
 func (a *App) Cars(w http.ResponseWriter, r *http.Request) (int, error) {
 	cars, err := a.db.GetCars()
 	if err != nil {
