@@ -9,3 +9,10 @@ services:
             - 5432:5432
         environment:
             POSTGRES_PASSWORD: example
+    
+    web:
+      build: .
+      ports:
+        - "8082:8082"
+        
+      
