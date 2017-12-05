@@ -1,7 +1,8 @@
 #!/bin/sh
 # запуск приложения с демо базой
-docker-compose -f demo.yml up -d
 
+docker-compose -f demo.yml  up --build --force-recreate -d 
+#-d
 sleep 10
 
 echo "Creating sample database..."
