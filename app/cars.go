@@ -23,5 +23,9 @@ func (a *App) Cars(w http.ResponseWriter, r *http.Request) (int, error) {
 		},
 		Data: cars,
 	})
+	if err != nil {
+		log.Println(err)
+		return http.StatusInternalServerError, err
+	}
 	return http.StatusOK, nil
 }

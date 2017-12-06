@@ -13,7 +13,7 @@ func main() {
 	if eaddr, ok := os.LookupEnv("APPADDR"); ok {
 		addr = eaddr
 	}
-	connection := "postgres://postgres:example@0.0.0.0/carrental?sslmode=disable"
+	connection := "postgres://postgres:example@127.0.0.1/carrental?sslmode=disable"
 	if econn, ok := os.LookupEnv("POSTGRES"); ok {
 		connection = econn
 	}

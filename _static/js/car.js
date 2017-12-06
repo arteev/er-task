@@ -10,6 +10,13 @@ $(document).ready(function () {
         });
     });
 
+    $.getJSON("/api/v1/departments", function (data) {
+        dl = $("#departmentslist")
+        $.each(data.data, function (key, val) {
+            el = $('<option value="' + val.name + '"></option>')
+            dl.append(el)
+        });
+    });
 
     const idElemHistory = "tbodyhistory";
     tbody = document.getElementById(idElemHistory)
@@ -26,8 +33,7 @@ $(document).ready(function () {
         }
         addcolumn(item.oper == "rent" ? "Аренда" : "Возврат")
         addcolumn(item.dept)        
-        addcolumn(item.agent)
-        addcolumn(item.ss)
+        addcolumn(item.agent)        
         addcolumn(item.dateoper)
         tbody.insertBefore(row, tbody.children[0])
         if (isnew) {
@@ -97,16 +103,63 @@ $(document).ready(function () {
         car = $("#carsearch").val();      
         if (!car) {
             ShowError("Выберете транспортное средство");
+        } else {
+            $("#carinfo").removeClass("hide").addClass("show")
         }
         reload();
+        $("#carsearch").prop('disabled',true);
+        $("#btn-show").prop('disabled',true);
+
+
     });   
     
     $("#btn-clear").click(function(){
         event.preventDefault();   
         $("#tbodyhistory").children().remove(); 
+        $("#carsearch").prop('disabled',false);
         $("#carsearch").select();
         $("#carsearch").val("");
+        $("#carinfo").removeClass("show").addClass("hide")
+        $("#btn-show").prop('disabled',false);
+    });
 
+    rent = function(prn,pdep,pagent) {
+        //TODO: определить что аренда или возврат
+        $.post("/api/v1/rent",{regnum:prn,dept:pdep,agent:pagent})
+            .done(function(){
+                alert("ТС Взято в аренду");
+            })
+            .fail(function(data){
+                console.log(data);
+                if (data.responseJSON) {
+                    alert (data.responseJSON.error)
+                } else {
+                    alert("Ошибка:"+data.status)
+                }                              
+            });        
+
+    };
+
+    $("#caraction").click(function(){
+        car = $("#carsearch");
+        dep = $("#dep");
+        agn = $("#agent");
+        if (car.val()==="") {
+            alert("Выберите ТС")
+            car.select();
+            return;
+        }              
+        if (dep.val()==="") {
+            alert("Выберите подразделение")
+            dep.select();
+            return;
+        }
+        if (agn.val()==="") {
+            alert("Введите ФИО")
+            agn.select();
+            return;
+        }
+        rent(car.val(),dep.val(),agn.val());
     });
 
     $("#carsearch").select();       

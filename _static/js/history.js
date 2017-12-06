@@ -18,9 +18,7 @@ $(document).ready(function () {
         addcolumn(item.type)
         addcolumn(item.model)
         addcolumn('<a href="/car/' + item.rn + '">' + item.rn + '<a>')
-        addcolumn(item.agent)
-        addcolumn(item.ss)
-
+        addcolumn(item.agent)       
         addcolumn(item.dateoper)
 
         tbody.insertBefore(row, tbody.children[0])

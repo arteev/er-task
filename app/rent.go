@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/schema"
@@ -35,6 +36,7 @@ func newRentData(r *http.Request) (*RentData, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
+	log.Println(rd)
 	return rd, 0, nil
 }
 

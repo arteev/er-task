@@ -2,6 +2,6 @@ package model
 
 //Department - подразделения проката ТС
 type Department struct {
-	ID   int
-	Name string
+	ID   int    `json:"-"`
+	Name string `json:"name"`
 }

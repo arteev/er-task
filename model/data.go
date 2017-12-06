@@ -29,3 +29,8 @@ type CarsResponse struct {
 	Response
 	Data []Car `json:"data"`
 }
+
+type DepartmentsResponse struct {
+	Response
+	Data []Department `json:"data"`
+}

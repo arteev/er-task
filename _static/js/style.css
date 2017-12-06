@@ -4,7 +4,7 @@
 }
 .newitemhist  {
     font-style: italic;
-    background: #16d89e
+    background: #16d89e;
 }
 
 .errorinfo {
@@ -12,5 +12,14 @@
 }
 
 .return {
-    background: #afa0f3
+    background: #afa0f3;
+}
+
+.hide {
+    visibility: hidden;   
+    display: none;
+}
+.show {
+    visibility: visible;   
+    display: block;
 }

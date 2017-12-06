@@ -103,14 +103,13 @@ BEGIN
 
   -- уведомление приложению.
   SELECT T."NAME" "TYPE",M."NAME" "MODEL",C."REGNUM" "RN",R."TSWORK" "DATEOPER",
-    A."CODE" "AGENTCODE",A."NAME"||' '||A."MIDDLENAME"||' '||A."FAMILY" "AGENT",
+    R."AGENTNAME" "AGENT",
     CASE R."OPER" WHEN 1 THEN 'rent' ELSE 'return' END "OPER",
     D."NAME" "DEPT" INTO REC
-  FROM "CARTYPE" T, "MODEL" M, "CAR" C, "AGENT" A, "DEPARTMENT" D, "RENTAL" R
+  FROM "CARTYPE" T, "MODEL" M, "CAR" C, "DEPARTMENT" D, "RENTAL" R
   WHERE R."CAR" = C."ID"
   AND T."ID" = M."CTYPE"
   AND C."MODEL" = M."ID"
-  AND R."AGENT" = A."ID"
   AND D."ID" = R."DEPT"
   AND R."ID" = NEW."ID";
 
@@ -176,32 +175,6 @@ CREATE SEQUENCE "AGENT_ID_seq"
 
 ALTER TABLE "AGENT_ID_seq" OWNER TO postgres;
 
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- Name: AGENT; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE "AGENT" (
-    "ID" integer DEFAULT nextval('"AGENT_ID_seq"'::regclass) NOT NULL,
-    "NAME" character varying NOT NULL,
-    "FAMILY" character varying NOT NULL,
-    "MIDDLENAME" character varying,
-    "CODE" character varying NOT NULL
-);
-
-
-ALTER TABLE "AGENT" OWNER TO postgres;
-
---
--- Name: COLUMN "AGENT"."CODE"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN "AGENT"."CODE" IS 'м.б. СНИЛС или др. для однозначной идентификации';
-
-
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -215,6 +188,10 @@ CREATE SEQUENCE "CAR_ID_seq"
 
 
 ALTER TABLE "CAR_ID_seq" OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
 
 --
 -- Name: CAR; Type: TABLE; Schema: public; Owner: postgres
@@ -474,8 +451,8 @@ CREATE TABLE "RENTAL" (
     "TSWORK" timestamp without time zone NOT NULL,
     "OPER" smallint DEFAULT '0'::smallint NOT NULL,
     "DEPT" integer NOT NULL,
-    "AGENT" integer NOT NULL,
     "DUMMY" smallint,
+    "AGENTNAME" character varying(70) NOT NULL,
     CONSTRAINT checkoper CHECK (("OPER" = ANY (ARRAY[0, 1])))
 );
 
@@ -575,14 +552,6 @@ ALTER TABLE ONLY "RENTALLINKS" ALTER COLUMN "ID" SET DEFAULT nextval('"RENTALLIN
 
 
 --
--- Data for Name: AGENT; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY "AGENT" ("ID", "NAME", "FAMILY", "MIDDLENAME", "CODE") FROM stdin;
-\.
-
-
---
 -- Data for Name: CAR; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -642,7 +611,7 @@ COPY "MODEL" ("ID", "NAME", "CTYPE") FROM stdin;
 -- Data for Name: RENTAL; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "AGENT", "DUMMY") FROM stdin;
+COPY "RENTAL" ("ID", "CAR", "TS", "TSWORK", "OPER", "DEPT", "DUMMY", "AGENTNAME") FROM stdin;
 \.
 
 
@@ -665,35 +634,35 @@ SELECT pg_catalog.setval('"AGENT_ID_seq"', 1335, true);
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 11789, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 12129, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 465, true);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 472, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 95, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 98, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 11595, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 11935, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 2185, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 2263, true);
 
 
 --
@@ -707,7 +676,7 @@ SELECT pg_catalog.setval('"LOCATION_ID_seq"', 2529, true);
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 2986, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 3087, true);
 
 
 --
@@ -721,23 +690,7 @@ SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 127, true);
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1417, true);
-
-
---
--- Name: AGENT AGENT_CODE; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "AGENT"
-    ADD CONSTRAINT "AGENT_CODE" UNIQUE ("CODE");
-
-
---
--- Name: AGENT AGENT_ID; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "AGENT"
-    ADD CONSTRAINT "AGENT_ID" PRIMARY KEY ("ID");
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1426, true);
 
 
 --
@@ -940,14 +893,6 @@ ALTER TABLE ONLY "CARRENT"
 
 ALTER TABLE ONLY "CARRENT"
     ADD CONSTRAINT carrent_rental_id_fk FOREIGN KEY ("IDRENTAL") REFERENCES "RENTAL"("ID");
-
-
---
--- Name: RENTAL rental_agent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "RENTAL"
-    ADD CONSTRAINT rental_agent_id_fk FOREIGN KEY ("AGENT") REFERENCES "AGENT"("ID");
 
 
 --

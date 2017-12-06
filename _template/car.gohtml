@@ -13,6 +13,40 @@
         <button id="btn-show" >Показать</button>    
         <button id="btn-clear" >Сброс</button>    
     </div>
+
+
+    <div class="hide" id="carinfo" >
+        <div>
+            <span>Тип:</span><br>
+            <span>Модель:</span><br>            
+            <span>Номер:</span><br>
+            <span>Статус:</span><br>
+            <div>
+                <p>
+                    <div>
+                        Действие с транспортным средством:
+                        <br>
+                    </div>
+                    <datalist  id="departmentslist"></datalist>
+                    <div>
+                        <label>Подразделение:
+                            <input list="departmentslist" name="dep" id="dep" placeholder="Выберите подразделение" >
+                        </label><br><br>
+                    </div>
+                    <div>
+                        <label>Фамилия Имя Отчество:
+                            <input type="text" name="agent" id="agent" >
+                        </label>
+                    </div>                                         
+                     <br>
+                     <br>
+                    <button type="button" id="caraction">Взять в аренду</button>
+                </p>
+            </div>            
+        </div>
+    </div>
+
+
 </form>
 <br/>
 <table id="thistory" border=1>
@@ -20,8 +54,7 @@
         <tr>
             <td>Операция</td>
             <td>Точка</td>           
-            <td>ФИО</td>
-            <td>Код агента</td>            
+            <td>ФИО</td>            
             <td>Дата операции</td>                
         </tr>
     </thead>

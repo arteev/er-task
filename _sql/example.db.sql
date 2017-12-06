@@ -1,9 +1,9 @@
 -- Небольшой набор тестовых данных для CarRental
 UPDATE "RENTAL" SET "DUMMY"=1;
+DELETE FROM "CARRENT";
 DELETE FROM "RENTAL";
 DELETE  FROM "CARGOODS";
 DELETE FROM "CAR";
-DELETE FROM "AGENT";
 DELETE FROM "DEPARTMENT";
 DELETE FROM "MODEL";
 DELETE FROM "CARTYPE";
@@ -405,57 +405,6 @@ INSERT INTO "DEPARTMENT"("NAME") VALUES ('Юрмала');
 INSERT INTO "DEPARTMENT"("NAME") VALUES ('Якутск');
 INSERT INTO "DEPARTMENT"("NAME") VALUES ('Ялта');
 INSERT INTO "DEPARTMENT"("NAME") VALUES ('Ярославль');
--- AGENT
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-251 00','ВЛАДИМИР','АНДРЕЕВИЧ','БЕЙМ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-252 00','ГАЛИНА','ПАВЛОВНА','АБЖЕМИЛЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-253 00','КАМИЛ','КУРМАНОВИЧ','БИКШАНОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-254 00','ВЛАДИМИР','ИОСИФОВИЧ','БУТАКОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-255 00','СЕРГЕЙ','ГЕННАДЬЕВИЧ','ГАНИХИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-256 00','ВАСИЛИЙ','МИХАЙЛОВИЧ','АБУШОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-257 00','БОРИС','ПЕТРОВИЧ','ЗЫБАРЕВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-258 00','ВИКТОР','ПРОКОПЬЕВИЧ','ЗЮРКАЛОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-259 00','ФАИНА','АЛЕКСАНДРОВНА','АГАРЕНКОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-260 00','ЕЛЕНА','ЛЕОНИДОВНА','АГАРЫШЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-261 00','ПАВЕЛ','АЛЕКСАНДРОВИЧ','КИЧАКОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-262 00','КЛАВДИЯ','ИВАНОВНА','КУРИЛЬСКАЯ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-263 00','РАФИЯ','АБТУЛОВНА','АЗАНОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-264 00','ВИКТОР','ВАСИЛЬЕВИЧ','МАХРОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-265 00','АНАТОЛИЙ','ГРИГОРЬЕВИЧ','ПАНФИЛОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-266 00','ДОРИМЕДОНТ','ВАСИЛЬЕВИЧ','АКСАРИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-267 00','МИХАИЛ','ВАЛЕНТИНОВИЧ','АКСАРИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-268 00','ЗАЛИНА','МАХМУДОВНА','АЛБАГАЧИЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-269 00','ЮЛИЯ','ЮРЬЕВНА','ПУГАЧЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-270 00','НАТАЛЬЯ','ЮРЬЕВНА','КИРЕЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-271 00','ИВАН','ЯКОВЛЕВИЧ','СЛЕПНЕВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-272 00','ГАЛИНА','МАКСИМОВНА','СОЛДАТОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-273 00','НАТАЛЬЯ','АНИСИМОВНА','ТИМОХОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-274 00','ЕВГЕНИЙ','АЛЕКСАНДРОВИЧ','АЛЕКСАНДРОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-275 00','АМИНА','БАЙМИЕВНА','ФАХРУТДИНОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-276 00','ЛИДИЯ','СЕМЕНОВНА','АЛЕКСЕЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-277 00','АНАСТАСИЯ','ГУРЬЯНОВНА','ЧАСТИКОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-278 00','ТАМАРА','ИВАНОВНА','АЛЕМАСОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-279 00','ИГОРЬ','ВЛАДИМИРОВИЧ','ГОРБУНОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-280 00','ЛЕОНИД','ДМИТРИЕВИЧ','ШТИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-281 00','РИНАТ','ХАСАНОВИЧ','АБАЙДУЛЛИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-282 00','ХАМИС','КАЛИНОВИЧ','АБАЙДУЛЛИН');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-283 00','ЗИНАИДА','ГЕОРГИЕВНА','АБАКУМОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-284 00','НИКОЛАЙ','АЛЕКСЕЕВИЧ','АБАЛЬТСОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-285 00','ИРИНА','МИХАЙЛОВНА','АБАТУРОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-286 00','НИНА','АФАНАСЬЕВНА','АБАТУРОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-287 00','РОМАН','ХАМЗЕЕВИЧ','АБАШЕВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-288 00','РУСТАМ','ИЛЬШАТОВИЧ','АБДРАЗАКОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-289 00','ВАЛЕРИЙ','КАРЛОВИЧ','ВАЙГАНДТ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-290 00','НАТАЛЬЯ','ЮРЬЕВНА','КИРЕЕВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-291 00','МАРСЕЛЬ','РИЗОВИЧ','АБДРАХМАНОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-292 00','ФУАТ','МУБАРАКШЕВИЧ','АБДУЛГАЛЕЕВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-293 00','САКИНА','САГАДАТИНОВНА','АБДУЛЛИНА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-294 00','АРКАДИЙ','ВАСИЛЬЕВИЧ','БЕЛОУСОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-295 00','ХАММАТ','ЗИЯЕТДИНОВИЧ','АБДУЛОВ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-296 00','ГАЛИЯ','ИСХАКОВНА','АБДУРЯШИТОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-297 00','ЗОЯ','АНДРЕЕВНА','АЛИМОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-298 00','ГАЛИМАШ','КАБАЙТАЕВНА','АБЕЛЬДИНОВА');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-299 00','АЛЕВТИНА','ИЛЬИНИЧНА','АБЕРЛЕ');
-INSERT INTO "AGENT"("CODE","NAME","MIDDLENAME","FAMILY") VALUES('000-000-300 00','ФАСХАТБАНУ','ГАЛИМОВНА','АБЗАЛОВА');
 
 -- ГЕНЕРАЦИЯ ТЕСТОВЫХ ДАННЫХ ДЛЯ CAR+CARGOODS
 do $$
