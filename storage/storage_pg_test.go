@@ -8,7 +8,7 @@ import (
 )
 
 //TODO: брать из env
-var pgConnectionTest = "postgres://postgres:example@192.168.1.43/carrental?sslmode=disable"
+var pgConnectionTest = "postgres://postgres:example@127.0.0.1/carrental?sslmode=disable"
 
 func setUp(t *testing.T) Storage {
 	t.Helper()
@@ -22,7 +22,6 @@ func setUp(t *testing.T) Storage {
 		`INSERT INTO "CARTYPE"("ID","NAME","CODE") VALUES (1,'AUTO','AUTO')`,
 		`INSERT INTO  "MODEL"("ID","NAME","CTYPE") VALUES (1,'test',1);`,
 		`INSERT INTO  "DEPARTMENT"("ID","NAME") VALUES (1,'dep1');`,
-		`INSERT INTO  "AGENT"("ID","CODE","NAME","MIDDLENAME","FAMILY") VALUES (1,'000-000-000 01','Иван','Иванович','Иванов');`,
 	}
 	for _, sql := range sqls {
 		_, err = spg.db.Exec(sql)
@@ -45,7 +44,6 @@ func tearDown(s *storagePG, t *testing.T) {
 		`DELETE FROM "CARTYPE"`,
 		`DELETE FROM "CAR"`,
 		`DELETE FROM "DEPARTMENT"`,
-		`DELETE FROM "AGENT"`,
 	}
 	for _, sql := range sqls {
 		_, err := s.db.Exec(sql)
@@ -93,13 +91,12 @@ func ExistsRentReturn(t *testing.T, s *storagePG, rn, dep, agent string, isRent 
 		op = 0
 	}
 	t.Helper()
-	r := s.db.QueryRow(`SELECT COUNT(*) FROM "RENTAL" R,"CAR" C,"DEPARTMENT" d, "AGENT" a
+	r := s.db.QueryRow(`SELECT COUNT(*) FROM "RENTAL" R,"CAR" C,"DEPARTMENT" d
 	WHERE r."CAR" = c."ID"
-	  and d."ID" = r."DEPT"
-	  and r."AGENT" = a."ID"
+	  and d."ID" = r."DEPT"	  
 	  and c."REGNUM"= $1
 	  and d."NAME" = $2
-	  and a."CODE" = $3
+	  and r."AGENTNAME" = $3
 	  and r."OPER"= $4
 		 `, rn, dep, agent, op)
 	var count int64

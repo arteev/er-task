@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/schema"
@@ -12,11 +11,11 @@ import (
 type RentData struct {
 	RegNum   string `schema:"regnum"` // Номер ТС
 	DeptCode string `schema:"dept"`   // Код подразделения
-	AgentSS  string `schema:"agent"`  // Код(ИД) агента
+	Agent    string `schema:"agent"`  // Фио агента
 }
 
 func (r RentData) Check() error {
-	if r.RegNum == "" || r.DeptCode == "" || r.AgentSS == "" {
+	if r.RegNum == "" || r.DeptCode == "" || r.Agent == "" {
 		return errors.New("Value not found")
 	}
 	return nil
@@ -36,7 +35,6 @@ func newRentData(r *http.Request) (*RentData, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	log.Println(rd)
 	return rd, 0, nil
 }
 
@@ -45,7 +43,7 @@ func (a *App) Rent(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return code, err
 	}
-	err = a.db.Rent(rd.RegNum, rd.DeptCode, rd.AgentSS)
+	err = a.db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -68,7 +66,7 @@ func (a *App) Return(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return code, err
 	}
-	err = a.db.Return(rd.RegNum, rd.DeptCode, rd.AgentSS)
+	err = a.db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

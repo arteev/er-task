@@ -144,7 +144,6 @@ func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) e
 
 //Взять в аренду ТС
 func (pg *storagePG) Rent(rn string, dep string, agn string) error {
-	log.Printf("%q, %q, %q:", rn, dep, agn)
 	_, err := pg.stmtRentAction.Exec(opRent, rn, dep, agn)
 	if err != nil {
 		return err

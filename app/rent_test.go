@@ -66,11 +66,11 @@ func TestRentAndReturnAPI(t *testing.T) {
 		dep := fakestorage.adddepart(1, "dep1")
 		md := fakestorage.addmodel(1, "bmw")
 		car := fakestorage.addcar(1, "X000XX", md)
-		agn := fakestorage.addagent(1, "000-000-000 01", "иван", "иванович", "иванов")
+		agn := "000-000-000 01"
 		form = url.Values{}
 		form.Set("regnum", car.Regnum)
 		form.Set("dept", dep.Name)
-		form.Set("agent", agn.Code)
+		form.Set("agent", agn)
 		r, _ = http.NewRequest("POST", routeTest.route, strings.NewReader(form.Encode()))
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		r.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
@@ -78,7 +78,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		a.routes.ServeHTTP(w, r)
 		assertCodeEqual(t, routeTest.name, http.StatusOK, w.Code)
 		checkResponseJSONMessage(t, w.Body, `success`, false)
-		if rentok := fakestorage.existsRent(car.Regnum, dep.Name, agn.Code, routeTest.name); !rentok {
+		if rentok := fakestorage.existsRent(car.Regnum, dep.Name, agn, routeTest.name); !rentok {
 			t.Errorf("Expected %s in storage", routeTest.name)
 		}
 	}

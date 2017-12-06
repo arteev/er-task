@@ -25,7 +25,6 @@ type FakeStorage struct {
 	sync.RWMutex
 	cars           map[string]model.Car
 	carid          map[int]model.Car
-	agent          map[string]model.Agent
 	department     map[string]model.Department
 	carmodel       map[string]model.CarModel
 	rentjournal    map[string]model.RentData
@@ -38,7 +37,6 @@ func initFakeStorage() storage.Storage {
 		cars:           make(map[string]model.Car),
 		carid:          make(map[int]model.Car),
 		department:     make(map[string]model.Department),
-		agent:          make(map[string]model.Agent),
 		carmodel:       make(map[string]model.CarModel),
 		rentjournal:    make(map[string]model.RentData),
 		rentjournalArr: make([]model.RentData, 0),
@@ -100,10 +98,6 @@ func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
 	if !exist {
 		return errors.New("Department not found")
 	}
-	a, exist := s.agent[agn]
-	if !exist {
-		return errors.New("Agent not found")
-	}
 
 	rj := model.RentData{
 		RN:    rn,
@@ -111,7 +105,7 @@ func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
 		//TODO: Dep
 		//Dep: dep
 	}
-	s.rentjournal[car.Regnum+d.Name+a.Code+"Rent"] = rj
+	s.rentjournal[car.Regnum+d.Name+agn+"Rent"] = rj
 	s.rentjournalArr = append(s.rentjournalArr, rj)
 
 	return nil
@@ -129,17 +123,13 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	if !exist {
 		return errors.New("Department not found")
 	}
-	a, exist := s.agent[agn]
-	if !exist {
-		return errors.New("Agent not found")
-	}
 	rj := model.RentData{
 		RN:    rn,
 		Agent: agn,
 		//TODO: Dep
 		//Dep: dep
 	}
-	s.rentjournal[car.Regnum+d.Name+a.Code+"Return"] = rj
+	s.rentjournal[car.Regnum+d.Name+agn+"Return"] = rj
 	s.rentjournalArr = append(s.rentjournalArr, rj)
 	return nil
 }
@@ -202,14 +192,6 @@ func (s *FakeStorage) addcar(id int, rn string, m model.CarModel) model.Car {
 	return s.cars[rn]
 }
 
-//helper for test. Add/Update Agent
-func (s *FakeStorage) addagent(id int, code, name, midname, family string) model.Agent {
-	s.Lock()
-	defer s.Unlock()
-	s.agent[code] = model.Agent{id, code, name, family, midname}
-	return s.agent[code]
-}
-
 //helper for test. Count track coordinates by regnum of the car
 func (s *FakeStorage) countTrack(rn string) int {
 	s.RLock()
@@ -225,7 +207,6 @@ func (s *FakeStorage) clear() {
 	s.cars = make(map[string]model.Car)
 	s.carid = make(map[int]model.Car)
 	s.department = make(map[string]model.Department)
-	s.agent = make(map[string]model.Agent)
 	s.carmodel = make(map[string]model.CarModel)
 	s.rentjournal = make(map[string]model.RentData)
 	s.rentjournalArr = make([]model.RentData, 0)
