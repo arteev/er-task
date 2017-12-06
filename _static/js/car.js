@@ -57,7 +57,7 @@ $(document).ready(function () {
             $.each(data.data.reverse(), function (key, val) {
                 appendItem(val, false);
             });
-        });
+        })            
     }
 
     ShowError = function (error) {
@@ -97,20 +97,25 @@ $(document).ready(function () {
             ShowError("Error: browser does not support WebSockets")
         }
     }
+
     
-    $("#btn-show").click(function () {        
-        event.preventDefault();       
+    
+    showcar = function(){
         car = $("#carsearch").val();      
         if (!car) {
             ShowError("Выберете транспортное средство");
         } else {
             $("#carinfo").removeClass("hide").addClass("show")
         }
-        reload();
+       
         $("#carsearch").prop('disabled',true);
         $("#btn-show").prop('disabled',true);
+    };
 
-
+    $("#btn-show").click(function () {        
+        event.preventDefault();       
+        showcar();
+        reload();
     });   
     
     $("#btn-clear").click(function(){
@@ -131,11 +136,11 @@ $(document).ready(function () {
             })
             .fail(function(data){
                 console.log(data);
-                if (data.responseJSON) {
-                    alert (data.responseJSON.error)
+                if (data.responseJSON.error) {
+                    alert(data.responseJSON.error);
                 } else {
-                    alert("Ошибка:"+data.status)
-                }                              
+                    alert("Произошла ошибка: " + data.status +" - "+ data.statusText);
+                }                                 
             });        
 
     };
@@ -164,4 +169,7 @@ $(document).ready(function () {
 
     $("#carsearch").select();       
     startWS();
+    if ($("#carsearch").val()!=="") {
+        showcar();
+    }
 });

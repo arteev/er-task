@@ -39,6 +39,7 @@ type storagePG struct {
 	stmtRentAction  *sql.Stmt
 	stmtRentJornal  *sql.Stmt
 	stmtCars        *sql.Stmt
+	stmtDepartments *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string, usenotify bool) error {
@@ -126,6 +127,10 @@ func (pg *storagePG) prepare() (err error) {
 		return err
 	}
 	pg.stmtCars, err = pg.db.Prepare(sqlCars)
+	if err != nil {
+		return err
+	}
+	pg.stmtDepartments, err = pg.db.Prepare(sqlDepartments)
 	if err != nil {
 		return err
 	}
@@ -229,4 +234,22 @@ func (pg *storagePG) GetCars() ([]model.Car, error) {
 		cars = append(cars, car)
 	}
 	return cars, nil
+}
+
+func (pg *storagePG) GetDepartments() ([]model.Department, error) {
+	rows, err := pg.stmtDepartments.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	deps := make([]model.Department, 0)
+	for rows.Next() {
+		d := model.Department{}
+		err = rows.Scan(&d.ID, &d.Name)
+		if err != nil {
+			return nil, err
+		}
+		deps = append(deps, d)
+	}
+	return deps, nil
 }

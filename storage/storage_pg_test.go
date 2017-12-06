@@ -292,3 +292,20 @@ func TestCars(t *testing.T) {
 	}
 	//TODO: check others fields
 }
+
+func TestDepartments(t *testing.T) {
+	s := setUp(t)
+	spg := s.(*storagePG)
+	defer s.Done()
+	defer tearDown(spg, t)
+	deps, err := s.GetDepartments()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(deps) != 1 {
+		t.Error("Expected len(list) = 1 of departments")
+	}
+	if deps[0].Name != "dep1" {
+		t.Errorf("Expected name department %q, got %q", "dep1", deps[0].Name)
+	}
+}

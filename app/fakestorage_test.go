@@ -212,3 +212,14 @@ func (s *FakeStorage) clear() {
 	s.rentjournalArr = make([]model.RentData, 0)
 	s.track = make(map[string][]point)
 }
+
+//TODO: do it
+func (s *FakeStorage) GetDepartments() ([]model.Department, error) {
+	s.RLock()
+	defer s.RUnlock()
+	deps := make([]model.Department, 0)
+	for _, d := range s.department {
+		deps = append(deps, d)
+	}
+	return deps, nil
+}

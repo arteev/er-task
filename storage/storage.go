@@ -31,6 +31,9 @@ type Storage interface {
 	//Получение списка ТС
 	GetCars() ([]model.Car, error)
 
+	//Получение подразделений
+	GetDepartments() ([]model.Department, error)
+
 	//Уведомление от хранилища о событиях
 	Notify() chan Notification
 }
