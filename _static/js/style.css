@@ -23,3 +23,14 @@
     visibility: visible;   
     display: block;
 }
+
+.car-info-value,.car-rent,.car-goods {
+    font-weight: bold;
+}
+
+.car-rent {
+    color: orange;
+}
+.car-goods {
+    color: green;
+}

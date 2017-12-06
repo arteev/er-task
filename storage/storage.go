@@ -31,6 +31,9 @@ type Storage interface {
 	//Получение списка ТС
 	GetCars() ([]model.Car, error)
 
+	//Получение информации о ТС включая остаток либо аренду по регистрационному номеру
+	GetCarInfo(string) (*model.CarInfo, error)
+
 	//Получение подразделений
 	GetDepartments() ([]model.Department, error)
 

@@ -1,14 +1,6 @@
 $(document).ready(function () {
 
-    $.getJSON("/api/v1/cars", function (data) {
-        dl = $("#carslist")
-        dl.children().remove()
-        console.log(data)
-        $.each(data.data, function (key, val) {
-            el = $('<option value="' + val.rn + '"></option>')
-            dl.append(el)
-        });
-    });
+   var selectedCarInfo;
 
     $.getJSON("/api/v1/departments", function (data) {
         dl = $("#departmentslist")
@@ -47,6 +39,34 @@ $(document).ready(function () {
         }
     }
 
+    reloadcar = function() {
+        selectedCarInfo = null;
+        $.getJSON("/api/v1/car/"+car, function (data) {
+            
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            selectedCarInfo  = data.data;
+            $("#car-rn").text(data.data.rn);
+            $("#car-type").text(data.data.model.cartype.type);
+            $("#car-model").text(data.data.model.name);
+            if (data.data.isrent === 1) {
+                $("#car-status").text("В аренде. Арендатор:"+data.data.agent
+                    +".  Взято в:"+data.data.department+"  ("+data.data.dateoper+")").removeClass("car-goods").addClass("car-rent");
+                $("#caraction").text("Вернуть");
+                $("#agent").val(data.data.agent);
+                $("#dep").val("");
+
+            } else {
+                $("#car-status").text("В наличии в:"+data.data.department).removeClass("car-rent").addClass("car-goods");
+                $("#caraction").text("Взять в аренду");
+                $("#agent").val("");
+                $("#dep").val("");
+            }           
+            
+        });
+    } 
     reload = function () {
         car = $("#carsearch").val();        
         $("#tbodyhistory").children().remove();       
@@ -57,7 +77,9 @@ $(document).ready(function () {
             $.each(data.data.reverse(), function (key, val) {
                 appendItem(val, false);
             });
-        })            
+        }); 
+        reloadcar();
+       
     }
 
     ShowError = function (error) {
@@ -71,18 +93,20 @@ $(document).ready(function () {
         }, 5000);     
     }
 
-    startWS = function () {
+    startWS = function (mustreload) {
         if (window["WebSocket"]) {
             conn = new WebSocket("ws://" + document.location.host + "/ws");
             conn.onopen = function () {
                 $(".errorinfo").remove();
-                reload();
+                if (mustreload) {// Для загрузки после переподключения 
+                    reload();                    
+                }               
             };
             conn.onclose = function (evt) {
                 ShowError("WebSocket connection closed. Retry after 5 sec.")
                 conn = null
                 setTimeout(function () {
-                    startWS();
+                    startWS(true);
                 }, 5000)
             }
             conn.onmessage = function (evt) {
@@ -91,7 +115,7 @@ $(document).ready(function () {
                 if (car && data.rn == car) {
                     appendItem(data, true);
                 }
-                
+                reloadcar();                
             }
         } else {
             ShowError("Error: browser does not support WebSockets")
@@ -114,7 +138,7 @@ $(document).ready(function () {
 
     $("#btn-show").click(function () {        
         event.preventDefault();       
-        showcar();
+        showcar();             
         reload();
     });   
     
@@ -130,9 +154,13 @@ $(document).ready(function () {
 
     rent = function(prn,pdep,pagent) {
         //TODO: определить что аренда или возврат
-        $.post("/api/v1/rent",{regnum:prn,dept:pdep,agent:pagent})
+        var apiurl = "/api/v1/rent";
+        if (selectedCarInfo.isrent===1){
+            apiurl = "/api/v1/return";
+        }
+        $.post(apiurl,{regnum:prn,dept:pdep,agent:pagent})
             .done(function(){
-                alert("ТС Взято в аренду");
+                //reloadcar();
             })
             .fail(function(data){
                 console.log(data);
@@ -150,25 +178,36 @@ $(document).ready(function () {
         dep = $("#dep");
         agn = $("#agent");
         if (car.val()==="") {
-            alert("Выберите ТС")
+            alert("Выберите ТС");
             car.select();
             return;
         }              
         if (dep.val()==="") {
-            alert("Выберите подразделение")
+            alert("Выберите подразделение");
             dep.select();
             return;
         }
         if (agn.val()==="") {
-            alert("Введите ФИО")
+            alert("Введите ФИО");
             agn.select();
             return;
         }
         rent(car.val(),dep.val(),agn.val());
     });
 
+
+    reload();
+    $.getJSON("/api/v1/cars", function (data) {
+        dl = $("#carslist")
+        dl.children().remove()        
+        $.each(data.data, function (key, val) {
+            el = $('<option value="' + val.rn + '"></option>')
+            dl.append(el)
+        });
+    });
+
     $("#carsearch").select();       
-    startWS();
+    startWS(false);
     if ($("#carsearch").val()!=="") {
         showcar();
     }

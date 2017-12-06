@@ -16,9 +16,9 @@ type RentData struct {
 }
 
 type Response struct {
-	ContentType string `json:"content"`
-	Error       string `json:"error"`
-	Message     string `json:"message"`
+	ContentType string `json:"content,omitempty"`
+	Error       string `json:"error,omitempty"`
+	Message     string `json:"message,omitempty"`
 }
 type RentDataResponse struct {
 	Response
@@ -28,6 +28,10 @@ type RentDataResponse struct {
 type CarsResponse struct {
 	Response
 	Data []Car `json:"data"`
+}
+type CarInfoResponse struct {
+	Response
+	Data CarInfo `json:"data"`
 }
 
 type DepartmentsResponse struct {

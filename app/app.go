@@ -84,8 +84,14 @@ func (a *App) init() http.Handler {
 			Methods: []string{"GET"},
 			Handler: ErrorHandler(a.Departments),
 		},
+		{
+			IsAPI:   true,
+			Path:    "/car/{rn}",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.CarInfo),
+		},
 
-		//render
+		//render routes
 		{
 			IsAPI:   false,
 			Path:    "/",

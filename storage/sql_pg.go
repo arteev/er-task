@@ -36,4 +36,21 @@ WHERE
 	"MODEL"."ID"="CAR"."MODEL" AND "MODEL"."CTYPE"="CARTYPE"."ID"`
 
 	sqlDepartments = `SELECT "ID", "NAME" FROM "DEPARTMENT"`
+
+	sqlCarInfo = `SELECT
+	C."ID",C."REGNUM",M."NAME" "MODEL", T."NAME" "TYPE", T."CODE" "TYPECODE"
+	,(SELECT D."NAME" FROM "DEPARTMENT" D WHERE  D."ID" = coalesce(G."DEPT",R."DEPT")) "DEPTNAME"
+	,coalesce(R."TSWORK",CURRENT_TIMESTAMP) "TSWORK"
+	,coalesce(R."OPER",0) "OPER"
+	,coalesce(R."AGENTNAME",'') "AGENTNAME"
+FROM
+	"CARTYPE" T, "MODEL" M,
+	"CAR" C LEFT JOIN "CARGOODS" G on G."CAR" = C."ID"
+				  LEFT JOIN "CARRENT" CR on CR."CAR" = C."ID"
+	        LEFT JOIN "RENTAL" R on R."ID" = CR."IDRENTAL"
+WHERE
+  C."REGNUM" = $1
+  AND C."MODEL" = M."ID"
+  AND M."CTYPE" = T."ID";;
+`
 )

@@ -166,6 +166,10 @@ func (s *FakeStorage) GetCars() ([]model.Car, error) {
 	return cars, nil
 }
 
+func (s *FakeStorage) GetCarInfo(rn string) (*model.CarInfo, error) {
+	return nil, nil
+}
+
 //helper for test. Add/Update Department
 func (s *FakeStorage) adddepart(id int, name string) model.Department {
 	s.Lock()

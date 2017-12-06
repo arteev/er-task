@@ -40,6 +40,7 @@ type storagePG struct {
 	stmtRentJornal  *sql.Stmt
 	stmtCars        *sql.Stmt
 	stmtDepartments *sql.Stmt
+	stmtCarInfo     *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string, usenotify bool) error {
@@ -131,6 +132,10 @@ func (pg *storagePG) prepare() (err error) {
 		return err
 	}
 	pg.stmtDepartments, err = pg.db.Prepare(sqlDepartments)
+	if err != nil {
+		return err
+	}
+	pg.stmtCarInfo, err = pg.db.Prepare(sqlCarInfo)
 	if err != nil {
 		return err
 	}
@@ -234,6 +239,18 @@ func (pg *storagePG) GetCars() ([]model.Car, error) {
 		cars = append(cars, car)
 	}
 	return cars, nil
+}
+
+//TODO : трансформировать ошибку
+//TODO: test it
+func (pg *storagePG) GetCarInfo(rn string) (*model.CarInfo, error) {
+	row := pg.stmtCarInfo.QueryRow(rn)
+	car := &model.CarInfo{}
+	err := row.Scan(&car.ID, &car.Regnum, &car.Model.Name, &car.Model.Type.Name, &car.Model.Type.Code, &car.Department, &car.Dateoper, &car.IsRental, &car.Agent)
+	if err != nil {
+		return nil, err
+	}
+	return car, nil
 }
 
 func (pg *storagePG) GetDepartments() ([]model.Department, error) {
