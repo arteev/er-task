@@ -36,10 +36,10 @@ SET search_path = public, pg_catalog;
 
 CREATE FUNCTION increment(i integer) RETURNS integer
     LANGUAGE plpgsql
-    AS $$
-    BEGIN
-      RETURN i + 1;
-    END;
+    AS $$
+    BEGIN
+      RETURN i + 1;
+    END;
     $$;
 
 
@@ -51,14 +51,14 @@ ALTER FUNCTION public.increment(i integer) OWNER TO postgres;
 
 CREATE FUNCTION rental_del_lock() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-  -- Блокировка удаления записи из журнала аренды
-  IF OLD."DUMMY" IS NOT NULL THEN
-    RETURN OLD;
-  END IF;
-  RAISE EXCEPTION 'Can not delete record from table RENTAL';
-END;
+    AS $$
+BEGIN
+  -- Блокировка удаления записи из журнала аренды
+  IF OLD."DUMMY" IS NOT NULL THEN
+    RETURN OLD;
+  END IF;
+  RAISE EXCEPTION 'Can not delete record from table RENTAL';
+END;
 $$;
 
 
@@ -84,8 +84,7 @@ BEGIN
   -- при взятии в аренду удаляем остаток в подразделении
   IF new."OPER" = opRent THEN
     DELETE FROM "CARGOODS" C
-    WHERE C."CAR" = NEW."CAR"
-      AND C."DEPT" = NEW."DEPT";
+    WHERE C."CAR" = NEW."CAR";
     INSERT INTO "CARRENT"("CAR","IDRENTAL") VALUES (new."CAR",new."ID");
   END IF;
   -- при возврате подымаем в остаток подразделения
@@ -133,29 +132,29 @@ ALTER FUNCTION public.rental_goods() OWNER TO postgres;
 
 CREATE FUNCTION rental_goods_check() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-DECLARE
-  opRent SMALLINT = 1;
-  opReturn SMALLINT = 0;
-  icnt INTEGER;
-  sregnum VARCHAR;
-BEGIN
-  SELECT "CAR"."REGNUM" INTO sregnum FROM "CAR" WHERE "CAR"."ID" = new."CAR";
-  --при аренде ТС должно присутствовать в CARGOODS
-  IF opRent = new."OPER" THEN
-    SELECT count(1) INTO icnt from "CARGOODS" WHERE "CARGOODS"."CAR" = new."CAR";
-    IF icnt=0 THEN
-      RAISE EXCEPTION 'Транспортное средство % должно быть в наличии в любой точке выдачи ',sregnum;
-    END IF;
-  END IF;
-  IF opReturn = new."OPER" THEN
-    SELECT count(1) INTO icnt from "CARRENT" WHERE "CARRENT"."CAR" = new."CAR";
-    IF icnt=0 THEN
-      RAISE EXCEPTION 'Транспортное средство % должно быть в прокате для принятия а любой точке',sregnum;
-    END IF;
-  END IF;
-  RETURN NEW;
-END;
+    AS $$
+DECLARE
+  opRent SMALLINT = 1;
+  opReturn SMALLINT = 0;
+  icnt INTEGER;
+  sregnum VARCHAR;
+BEGIN
+  SELECT "CAR"."REGNUM" INTO sregnum FROM "CAR" WHERE "CAR"."ID" = new."CAR";
+  --при аренде ТС должно присутствовать в CARGOODS
+  IF opRent = new."OPER" THEN
+    SELECT count(1) INTO icnt from "CARGOODS" WHERE "CARGOODS"."CAR" = new."CAR";
+    IF icnt=0 THEN
+      RAISE EXCEPTION 'Транспортное средство % должно быть в наличии в любой точке выдачи ',sregnum;
+    END IF;
+  END IF;
+  IF opReturn = new."OPER" THEN
+    SELECT count(1) INTO icnt from "CARRENT" WHERE "CARRENT"."CAR" = new."CAR";
+    IF icnt=0 THEN
+      RAISE EXCEPTION 'Транспортное средство % должно быть в прокате для принятия а любой точке',sregnum;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
 $$;
 
 
@@ -634,35 +633,35 @@ SELECT pg_catalog.setval('"AGENT_ID_seq"', 1335, true);
 -- Name: CARGOODS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 12129, true);
+SELECT pg_catalog.setval('"CARGOODS_ID_seq"', 12499, true);
 
 
 --
 -- Name: CARRENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARRENT_ID_seq"', 472, true);
+SELECT pg_catalog.setval('"CARRENT_ID_seq"', 484, true);
 
 
 --
 -- Name: CARTYPE_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 98, true);
+SELECT pg_catalog.setval('"CARTYPE_ID_seq"', 101, true);
 
 
 --
 -- Name: CAR_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"CAR_ID_seq"', 11935, true);
+SELECT pg_catalog.setval('"CAR_ID_seq"', 12301, true);
 
 
 --
 -- Name: DEPARTMENT_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 2263, true);
+SELECT pg_catalog.setval('"DEPARTMENT_ID_seq"', 2341, true);
 
 
 --
@@ -676,21 +675,21 @@ SELECT pg_catalog.setval('"LOCATION_ID_seq"', 2529, true);
 -- Name: MODEL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"MODEL_ID_seq"', 3087, true);
+SELECT pg_catalog.setval('"MODEL_ID_seq"', 3188, true);
 
 
 --
 -- Name: RENTALLINKS_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 127, true);
+SELECT pg_catalog.setval('"RENTALLINKS_ID_seq"', 131, true);
 
 
 --
 -- Name: RENTAL_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1426, true);
+SELECT pg_catalog.setval('"RENTAL_ID_seq"', 1442, true);
 
 
 --
