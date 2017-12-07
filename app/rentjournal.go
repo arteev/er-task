@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/arteev/er-task/model"
@@ -28,5 +29,9 @@ func (a *App) RentJournal(w http.ResponseWriter, r *http.Request) (int, error) {
 		},
 		Data: rds,
 	})
+	if err != nil {
+		log.Println(err)
+		return http.StatusInternalServerError, err
+	}
 	return http.StatusOK, nil
 }

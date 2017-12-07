@@ -10,6 +10,44 @@ import (
 	"github.com/arteev/er-task/storage"
 )
 
+func TestCarInfo(t *testing.T) {
+	var fakestorage *FakeStorage
+	storage.GetStorage = func() storage.Storage {
+		fakestorage = initFakeStorage().(*FakeStorage)
+		return fakestorage
+	}
+	a := new(App)
+	a.init()
+	defer fakestorage.Done()
+	md := fakestorage.addmodel(1, "bmw")
+	fakestorage.addcar(1, "XXX", md)
+
+	//Invoked
+	r, _ := http.NewRequest("GET", "/api/v1/car/0", nil)
+	w := httptest.NewRecorder()
+	a.routes.ServeHTTP(w, r)
+	assertCodeEqual(t, "", http.StatusInternalServerError, w.Code)
+	if !fakestorage.invokedCarInfo {
+		t.Error("Must be invoke Storage.CarInfo")
+	}
+
+	r, _ = http.NewRequest("GET", "/api/v1/car/XXX", nil)
+	w = httptest.NewRecorder()
+	a.routes.ServeHTTP(w, r)
+	assertCodeEqual(t, "", http.StatusOK, w.Code)
+	ci := &model.CarInfoResponse{}
+	err := json.Unmarshal(w.Body.Bytes(), ci)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ci.Message != "success" {
+		t.Errorf("Expected message %q, got %q", "success", ci.Message)
+	}
+	if ci.Data.Car.Regnum != "XXX" {
+		t.Errorf("Expected %q,got %q", "XXX", ci.Data.Car.Regnum)
+	}
+}
+
 func TestCars(t *testing.T) {
 	var fakestorage *FakeStorage
 	storage.GetStorage = func() storage.Storage {

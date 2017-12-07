@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -307,5 +308,50 @@ func TestDepartments(t *testing.T) {
 	}
 	if deps[0].Name != "dep1" {
 		t.Errorf("Expected name department %q, got %q", "dep1", deps[0].Name)
+	}
+}
+
+func TestGetCarInfo(t *testing.T) {
+	s := setUp(t)
+	spg := s.(*storagePG)
+	defer s.Done()
+	defer tearDown(spg, t)
+	_, err := s.GetCarInfo("00")
+	if err != sql.ErrNoRows {
+		t.Errorf("Expected %v, got %v", sql.ErrNoRows, err)
+	}
+	//see setUp()
+	addCar(spg, 1, t)
+	car, err := s.GetCarInfo(fmt.Sprintf("X%dXX", 1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if car.ID != 1 {
+		t.Errorf("Expected %d,got %d", 1, car.ID)
+	}
+	if car.Department != "dep1" {
+		t.Errorf("Expected %q,got %q", "dep1", car.Department)
+	}
+	if car.IsRental != 0 {
+		t.Errorf("Expected %d,got %d", 0, car.IsRental)
+	}
+	//rent
+	agnname := "000-000-000 01"
+	err = s.Rent(car.Regnum, "dep1", agnname)
+	if err != nil {
+		t.Error(err)
+	}
+	car, err = s.GetCarInfo(fmt.Sprintf("X%dXX", 1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if car.IsRental != 1 {
+		t.Errorf("Expected %d,got %d", 1, car.IsRental)
+	}
+	if car.Department != "dep1" {
+		t.Errorf("Expected %q,got %q", "dep1", car.Department)
+	}
+	if car.Agent != agnname {
+		t.Errorf("Expected %q,got %q", agnname, car.Agent)
 	}
 }

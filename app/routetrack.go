@@ -26,7 +26,7 @@ func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 		return http.StatusBadRequest, err
 	}
 
-	if err := a.db.Track(carnum, x, y); err != nil {
+	if err = a.db.Track(carnum, x, y); err != nil {
 		return http.StatusNotFound, err
 	}
 

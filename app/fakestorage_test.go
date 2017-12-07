@@ -21,6 +21,8 @@ type FakeStorage struct {
 	invokedReturn      bool
 	invokedRentJournal bool
 	invokedCars        bool
+	invokedCarInfo     bool
+	invokedDepartments bool
 
 	sync.RWMutex
 	cars           map[string]model.Car
@@ -167,7 +169,17 @@ func (s *FakeStorage) GetCars() ([]model.Car, error) {
 }
 
 func (s *FakeStorage) GetCarInfo(rn string) (*model.CarInfo, error) {
-	return nil, nil
+	s.Lock()
+	defer s.Unlock()
+	s.invokedCarInfo = true
+	car, exists := s.cars[rn]
+	if !exists {
+		return nil, fmt.Errorf("Car %q not found", rn)
+	}
+	ci := &model.CarInfo{
+		Car: car,
+	}
+	return ci, nil
 }
 
 //helper for test. Add/Update Department
@@ -191,8 +203,8 @@ func (s *FakeStorage) addmodel(id int, name string) model.CarModel {
 func (s *FakeStorage) addcar(id int, rn string, m model.CarModel) model.Car {
 	s.Lock()
 	defer s.Unlock()
-	s.cars[rn] = model.Car{id, rn, m}
-	s.carid[id] = model.Car{id, rn, m}
+	s.cars[rn] = model.Car{ID: id, Regnum: rn, Model: m}
+	s.carid[id] = model.Car{ID: id, Regnum: rn, Model: m}
 	return s.cars[rn]
 }
 
@@ -217,10 +229,10 @@ func (s *FakeStorage) clear() {
 	s.track = make(map[string][]point)
 }
 
-//TODO: do it
 func (s *FakeStorage) GetDepartments() ([]model.Department, error) {
 	s.RLock()
 	defer s.RUnlock()
+	s.invokedDepartments = true
 	deps := make([]model.Department, 0)
 	for _, d := range s.department {
 		deps = append(deps, d)

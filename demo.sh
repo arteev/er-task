@@ -1,7 +1,7 @@
 #!/bin/sh
 # запуск приложения с демо базой
 
-docker-compose -f demo.yml  up --build --force-recreate -d 
+docker-compose -f demo.yml  up --build --force-recreate --remove-orphans -d 
 #-d
 sleep 10
 

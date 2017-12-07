@@ -12,25 +12,32 @@ type cardata struct {
 	RN string
 }
 
-// Стартовая страница просмотр истории проката автомобилей
+//Index - /index Стартовая страница просмотр истории проката автомобилей
 func (a *App) Index(w http.ResponseWriter, r *http.Request) {
-	templs.ExecuteTemplate(w, "index.gohtml", nil)
+	err := templs.ExecuteTemplate(w, "index.gohtml", nil)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+	}
 }
 
-//TODO: //test api with rn
+//Car - обработчик для страницы /car просмотр истории и действия с ТС
 func (a *App) Car(w http.ResponseWriter, r *http.Request) {
 	var car cardata
 	vars := mux.Vars(r)
 	if rn, ok := vars["rn"]; ok {
 		car.RN = rn
 	}
-	//TODO: читать var
-	templs.ExecuteTemplate(w, "car.gohtml", car)
+	err := templs.ExecuteTemplate(w, "car.gohtml", car)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+	}
 }
 
 var muTemp sync.Mutex
 
-func (a *App) AutoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
+func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		muTemp.Lock()
 		defer muTemp.Unlock()

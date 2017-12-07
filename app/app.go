@@ -96,19 +96,19 @@ func (a *App) init() http.Handler {
 			IsAPI:   false,
 			Path:    "/",
 			Methods: []string{"GET"},
-			Handler: a.AutoReloadTemplates(a.Index),
+			Handler: a.autoReloadTemplates(a.Index),
 		},
 		{
 			IsAPI:   false,
 			Path:    "/car",
 			Methods: []string{"GET"},
-			Handler: a.AutoReloadTemplates(a.Car),
+			Handler: a.autoReloadTemplates(a.Car),
 		},
 		{
 			IsAPI:   false,
 			Path:    "/car/{rn}",
 			Methods: []string{"GET"},
-			Handler: a.AutoReloadTemplates(a.Car),
+			Handler: a.autoReloadTemplates(a.Car),
 		},
 		// websocket
 		{
