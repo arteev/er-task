@@ -101,6 +101,9 @@ $(document).ready(function () {
                 if (mustreload) {// Для загрузки после переподключения 
                     reload();                    
                 }               
+
+                setInterval(function(){ conn.send("ping") }, 1000 )
+
             };
             conn.onclose = function (evt) {
                 ShowError("WebSocket connection closed. Retry after 5 sec.")

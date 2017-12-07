@@ -13,3 +13,6 @@ for container_id in $(docker ps --filter='ancestor=postgres' -q)
     docker exec -i $container_id psql -U postgres carrental < ./_sql/example.db.sql
   done
 echo "Creating sample database...DONE"
+
+#scale 
+#docker-compose -f demo.yml scale web=3

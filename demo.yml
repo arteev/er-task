@@ -1,7 +1,6 @@
 version: '3.1'
 
 services:
-
     db:
       image: postgres
       restart: always
@@ -10,14 +9,35 @@ services:
       environment:
         POSTGRES_PASSWORD: example
     
-#    web:
-#      build: .
-#      restart: always
-#      volumes: 
-#        - .:/code
-#      environment:
-#        POSTGRES: "postgres://postgres:example@db/carrental?sslmode=disable"
-#      ports:
-#        - "8082:8082"
+    web:
+      build: .
+      restart: always
+      volumes: 
+        - .:/code
+      environment:
+        POSTGRES: "postgres://postgres:example@db/carrental?sslmode=disable"
+      links:
+        - db
+      #ports:
+      # - "8082:8082"
+      expose:
+        - '8082'
+    
+    balancer:
+      image: dockercloud/haproxy
+      links:
+        - web
+      environment:
+        STATS_AUTH: 'stats:stats'
+       # EXTRA_FRONTEND_SETTINGS_80: 'acl is_websocket hdr(Upgrade) -i WebSocket
+#acl is_websocket_server hdr_end(host) -i ws.localhost
+  #use_backend ws if is_websocket is_websocket_server'
+        EXTRA_DEFAULT_SETTINGS: timeout tunnel 1h, timeout client 30s
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      ports:
+        - '80:80'
+        - '1936:1936'
+     
 
       
