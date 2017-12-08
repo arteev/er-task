@@ -7,8 +7,7 @@ services:
       ports:
         - 5432:5432
       environment:
-        POSTGRES_PASSWORD: example
-    
+        POSTGRES_PASSWORD: example    
     web:
       build: .
       restart: always
@@ -29,9 +28,6 @@ services:
         - web
       environment:
         STATS_AUTH: 'stats:stats'
-       # EXTRA_FRONTEND_SETTINGS_80: 'acl is_websocket hdr(Upgrade) -i WebSocket
-#acl is_websocket_server hdr_end(host) -i ws.localhost
-  #use_backend ws if is_websocket is_websocket_server'
         EXTRA_DEFAULT_SETTINGS: timeout tunnel 1h, timeout client 30s
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock

@@ -2,9 +2,11 @@ package app
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 
+	"github.com/arteev/er-task/cache"
 	"github.com/arteev/er-task/storage"
 	"github.com/arteev/er-task/ws"
 
@@ -34,7 +36,15 @@ type App struct {
 }
 
 func (a *App) init() http.Handler {
-	a.db = storage.GetStorage()
+
+	a.db = cache.NewCacheRedis(storage.GetStorage(), func(name string, hit bool) {
+		if hit {
+			log.Printf("Cache hit: %s", name)
+		} else {
+			log.Printf("Cache missing: %s", name)
+		}
+	})
+	//a.db = storage.GetStorage()
 	err := a.db.Init(a.connectionString, true)
 	if err != nil {
 		panic(err)

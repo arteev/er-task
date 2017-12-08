@@ -10,6 +10,11 @@ services:
         environment:
             POSTGRES_PASSWORD: example
 
+    redis:
+        image: "redis:alpine"
+        ports:
+            - 6379:6379
+
     adminer:
         image: adminer
         restart: always
