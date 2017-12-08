@@ -37,14 +37,22 @@ type App struct {
 
 func (a *App) init() http.Handler {
 
-	a.db = cache.NewCacheRedis(storage.GetStorage(), func(name string, hit bool) {
-		if hit {
-			log.Printf("Cache hit: %s", name)
-		} else {
-			log.Printf("Cache missing: %s", name)
+	if val, ok := os.LookupEnv("CACHE"); ok && val == "true" {
+		rs, ok := os.LookupEnv("REDIS")
+		if !ok {
+			rs = "127.0.0.1:6379"
 		}
-	})
-	//a.db = storage.GetStorage()
+		a.db = cache.NewCacheRedis(rs, storage.GetStorage(), func(name string, hit bool) {
+			if hit {
+				log.Printf("Cache hit: %s", name)
+			} else {
+				log.Printf("Cache missing: %s", name)
+			}
+		})
+	} else {
+		a.db = storage.GetStorage()
+	}
+
 	err := a.db.Init(a.connectionString, true)
 	if err != nil {
 		panic(err)

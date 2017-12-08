@@ -8,6 +8,9 @@ services:
         - 5432:5432
       environment:
         POSTGRES_PASSWORD: example    
+    
+    redis:
+        image: "redis:alpine"    
     web:
       build: .
       restart: always
@@ -15,6 +18,8 @@ services:
         - .:/code
       environment:
         POSTGRES: "postgres://postgres:example@db/carrental?sslmode=disable"
+        REDIS: "redis:6379"
+        CACHE: "true"
       links:
         - db
       #ports:

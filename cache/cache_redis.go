@@ -26,13 +26,13 @@ type rediscache struct {
 type CacheHitMissCallback = func(name string, hit bool)
 
 //NewCacheRedis - возвращает обертку над хранилищем и кэширует данные
-func NewCacheRedis(s storage.Storage, f CacheHitMissCallback) storage.Storage {
+func NewCacheRedis(addr string, s storage.Storage, f CacheHitMissCallback) storage.Storage {
 	return &rediscache{
 		Storage:  s,
 		callback: f,
 		codec: &cache.Codec{
 			Redis: redis.NewClient(&redis.Options{
-				Addr: ":6379",
+				Addr: addr,
 			}),
 			Marshal: func(v interface{}) ([]byte, error) {
 				return json.Marshal(v)
@@ -48,10 +48,11 @@ func (r *rediscache) Rent(rn string, dep string, agn string) error {
 	keycache := "rentjournal"
 	err := r.Storage.Rent(rn, dep, agn)
 	if err != nil {
-		r.codec.Delete(keycache)
-		r.codec.Delete(keycache + rn)
 		return err
 	}
+	r.codec.Delete(keycache)
+	r.codec.Delete(keycache + rn)
+
 	return nil
 }
 
@@ -59,10 +60,10 @@ func (r *rediscache) Return(rn string, dep string, agn string) error {
 	keycache := "rentjournal"
 	err := r.Storage.Return(rn, dep, agn)
 	if err != nil {
-		r.codec.Delete(keycache)
-		r.codec.Delete(keycache + rn)
 		return err
 	}
+	r.codec.Delete(keycache)
+	r.codec.Delete(keycache + rn)
 	return nil
 }
 
@@ -98,13 +99,16 @@ func (r *rediscache) GetRentJornal(rn string) ([]model.RentData, error) {
 	if err != nil {
 		log.Println(err)
 	}
-	err = r.codec.Set(&cache.Item{
-		Key:        keycache + rn,
-		Object:     rds,
-		Expiration: time.Hour,
-	})
-	if err != nil {
-		log.Println(err)
+
+	if rn != "" {
+		err = r.codec.Set(&cache.Item{
+			Key:        keycache + rn,
+			Object:     rds,
+			Expiration: time.Hour,
+		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	return rds, nil
