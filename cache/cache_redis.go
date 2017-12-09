@@ -136,7 +136,7 @@ func (r *rediscache) GetDepartments() ([]model.Department, error) {
 	if err != nil {
 		log.Println(err)
 	}
-	return deps, err
+	return deps, nil
 }
 
 func (r *rediscache) Done() error {

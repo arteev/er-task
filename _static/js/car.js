@@ -170,7 +170,7 @@ $(document).ready(function () {
     });
 
 
-    reload();
+    
     $.getJSON("/api/v1/cars", function (data) {
         dl = $("#carslist")
         dl.children().remove()        
@@ -183,7 +183,7 @@ $(document).ready(function () {
     $("#carsearch").select();       
    
     if ($("#carsearch").val()!=="") {
-        showcar();
+        reload($("#carsearch").val());
     }
 
     mustreload = false;
