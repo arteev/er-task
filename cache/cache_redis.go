@@ -23,6 +23,8 @@ type rediscache struct {
 
 	getcars []model.Car
 }
+
+//CacheHitMissCallback callback function. Для подсчета статистики
 type CacheHitMissCallback = func(name string, hit bool)
 
 //NewCacheRedis - возвращает обертку над хранилищем и кэширует данные
@@ -44,71 +46,63 @@ func NewCacheRedis(addr string, s storage.Storage, f CacheHitMissCallback) stora
 	}
 }
 
-func (r *rediscache) Rent(rn string, dep string, agn string) error {
+func (r *rediscache) Rent(rn string, dep string, agn string) (int, error) {
 	keycache := "rentjournal"
-	err := r.Storage.Rent(rn, dep, agn)
+	id, err := r.Storage.Rent(rn, dep, agn)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	r.codec.Delete(keycache)
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.codec.Delete(keycache + rn)
-
-	return nil
+	r.codec.Delete(keycache)
+	return id, nil
 }
 
-func (r *rediscache) Return(rn string, dep string, agn string) error {
+func (r *rediscache) Return(rn string, dep string, agn string) (int, error) {
 	keycache := "rentjournal"
-	err := r.Storage.Return(rn, dep, agn)
+	id, err := r.Storage.Return(rn, dep, agn)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	r.codec.Delete(keycache)
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.codec.Delete(keycache + rn)
-	return nil
+	r.codec.Delete(keycache)
+	return id, nil
 }
 
 func (r *rediscache) GetRentJornal(rn string) ([]model.RentData, error) {
 	keycache := "rentjournal"
+	if rn != "" {
+		keycache += rn
+	}
 	rds := make([]model.RentData, 0)
 
-	checkkey := keycache
-	if rn != "" {
-		checkkey += rn
+	r.mu.Lock()
+	if err := r.codec.Get(keycache, &rds); err == nil {
+		r.mu.Unlock()
+		r.doCallback(keycache, true)
+		return rds, nil
 	}
-	if r.codec.Exists(checkkey) {
-		if err := r.codec.Get(checkkey, &rds); err == nil {
-			r.docallback(checkkey, true)
-			return rds, nil
-		}
-	}
+	r.mu.Unlock()
 
-	r.docallback(keycache, false)
-	if rn != "" {
-		r.docallback(keycache+rn, false)
-	}
+	r.doCallback(keycache, false)
+
 	rds, err := r.Storage.GetRentJornal(rn)
 	if err != nil {
 		return nil, err
 	}
 
+	r.mu.Lock()
 	err = r.codec.Set(&cache.Item{
 		Key:        keycache,
 		Object:     rds,
 		Expiration: time.Hour,
 	})
+	r.mu.Unlock()
 	if err != nil {
 		log.Println(err)
-	}
-
-	if rn != "" {
-		err = r.codec.Set(&cache.Item{
-			Key:        keycache + rn,
-			Object:     rds,
-			Expiration: time.Hour,
-		})
-		if err != nil {
-			log.Println(err)
-		}
 	}
 
 	return rds, nil
@@ -117,23 +111,28 @@ func (r *rediscache) GetRentJornal(rn string) ([]model.RentData, error) {
 
 func (r *rediscache) GetDepartments() ([]model.Department, error) {
 	key := "deps"
-	if r.codec.Exists(key) {
-		deps := make([]model.Department, 0)
-		if err := r.codec.Get(key, &deps); err == nil {
-			r.docallback(key, true)
-			return deps, nil
-		}
+
+	deps := make([]model.Department, 0)
+	r.mu.Lock()
+	if err := r.codec.Get(key, &deps); err == nil {
+		r.mu.Unlock()
+		r.doCallback(key, true)
+		return deps, nil
 	}
-	r.docallback(key, false)
+	r.mu.Unlock()
+
+	r.doCallback(key, false)
 	deps, err := r.Storage.GetDepartments()
 	if err != nil {
 		return nil, err
 	}
+	r.mu.Lock()
 	err = r.codec.Set(&cache.Item{
 		Key:        key,
 		Object:     deps,
 		Expiration: time.Hour,
 	})
+	r.mu.Unlock()
 	if err != nil {
 		log.Println(err)
 	}
@@ -147,7 +146,7 @@ func (r *rediscache) Done() error {
 	return r.Storage.Done()
 }
 
-func (r *rediscache) docallback(name string, hit bool) {
+func (r *rediscache) doCallback(name string, hit bool) {
 	if r.callback != nil {
 		r.callback(name, hit)
 	}

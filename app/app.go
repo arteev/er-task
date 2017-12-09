@@ -109,24 +109,43 @@ func (a *App) init() http.Handler {
 			Handler: ErrorHandler(a.CarInfo),
 		},
 
+		{
+			IsAPI:   true,
+			Path:    "/stats/deps/model",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.StatsByModel),
+		},
+		{
+			IsAPI:   true,
+			Path:    "/stats/deps/type",
+			Methods: []string{"GET"},
+			Handler: ErrorHandler(a.StatsByType),
+		},
+
 		//render routes
 		{
 			IsAPI:   false,
 			Path:    "/",
 			Methods: []string{"GET"},
-			Handler: a.autoReloadTemplates(a.Index),
+			Handler: a.Index,
 		},
 		{
 			IsAPI:   false,
 			Path:    "/car",
 			Methods: []string{"GET"},
-			Handler: a.autoReloadTemplates(a.Car),
+			Handler: a.Car,
+		},
+		{
+			IsAPI:   false,
+			Path:    "/stats",
+			Methods: []string{"GET"},
+			Handler: a.Stats,
 		},
 		{
 			IsAPI:   false,
 			Path:    "/car/{rn}",
 			Methods: []string{"GET"},
-			Handler: a.autoReloadTemplates(a.Car),
+			Handler: a.Car,
 		},
 		// websocket
 		{

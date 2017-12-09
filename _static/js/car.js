@@ -51,7 +51,11 @@ $(document).ready(function () {
             $("#car-rn").text(data.data.rn);
             $("#car-type").text(data.data.model.cartype.type);
             $("#car-model").text(data.data.model.name);
-            if (data.data.isrent === 1) {
+            
+            
+            isrent = data.data.isrent === 1
+            $("#agent").prop('disabled',isrent);
+            if (isrent) {
                 $("#car-status").text("В аренде. Арендатор:"+data.data.agent
                     +".  Взято в:"+data.data.department+"  ("+data.data.dateoper+")").removeClass("car-goods").addClass("car-rent");
                 $("#caraction").text("Вернуть");

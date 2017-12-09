@@ -88,17 +88,17 @@ func (s *FakeStorage) existsRent(rn string, dep string, agn string, suffix strin
 	return exist
 }
 
-func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
+func (s *FakeStorage) Rent(rn string, dep string, agn string) (int, error) {
 	s.invokedRent = true
 	s.Lock()
 	defer s.Unlock()
 	car, exist := s.cars[rn]
 	if !exist {
-		return errors.New("Car not found")
+		return 0, errors.New("Car not found")
 	}
 	d, exist := s.department[dep]
 	if !exist {
-		return errors.New("Department not found")
+		return 0, errors.New("Department not found")
 	}
 
 	rj := model.RentData{
@@ -110,20 +110,20 @@ func (s *FakeStorage) Rent(rn string, dep string, agn string) error {
 	s.rentjournal[car.Regnum+d.Name+agn+"Rent"] = rj
 	s.rentjournalArr = append(s.rentjournalArr, rj)
 
-	return nil
+	return len(s.rentjournalArr), nil
 }
 
-func (s *FakeStorage) Return(rn string, dep string, agn string) error {
+func (s *FakeStorage) Return(rn string, dep string, agn string) (int, error) {
 	s.invokedReturn = true
 	s.Lock()
 	defer s.Unlock()
 	car, exist := s.cars[rn]
 	if !exist {
-		return errors.New("Car not found")
+		return 0, errors.New("Car not found")
 	}
 	d, exist := s.department[dep]
 	if !exist {
-		return errors.New("Department not found")
+		return 0, errors.New("Department not found")
 	}
 	rj := model.RentData{
 		RN:    rn,
@@ -133,7 +133,7 @@ func (s *FakeStorage) Return(rn string, dep string, agn string) error {
 	}
 	s.rentjournal[car.Regnum+d.Name+agn+"Return"] = rj
 	s.rentjournalArr = append(s.rentjournalArr, rj)
-	return nil
+	return len(s.rentjournalArr), nil
 }
 
 func (s *FakeStorage) GetRentJornal(rn string) ([]model.RentData, error) {
@@ -180,6 +180,17 @@ func (s *FakeStorage) GetCarInfo(rn string) (*model.CarInfo, error) {
 		Car: car,
 	}
 	return ci, nil
+}
+
+//Статистика в разрезе подразделений и моделей
+func (s *FakeStorage) GetStatsByModel() ([]model.StatsDepartment, error) {
+	return nil, nil
+}
+
+//Статистика в разрезе подразделений и тип ТС
+func (s *FakeStorage) GetStatsByType() ([]model.StatsDepartment, error) {
+	return nil, nil
+
 }
 
 //helper for test. Add/Update Department

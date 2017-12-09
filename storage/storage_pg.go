@@ -34,13 +34,15 @@ type storagePG struct {
 
 	db *sql.DB
 
-	smttrac         *sql.Stmt
-	stmtFindCarByID *sql.Stmt
-	stmtRentAction  *sql.Stmt
-	stmtRentJornal  *sql.Stmt
-	stmtCars        *sql.Stmt
-	stmtDepartments *sql.Stmt
-	stmtCarInfo     *sql.Stmt
+	smttrac          *sql.Stmt
+	stmtFindCarByID  *sql.Stmt
+	stmtRentAction   *sql.Stmt
+	stmtRentJornal   *sql.Stmt
+	stmtCars         *sql.Stmt
+	stmtDepartments  *sql.Stmt
+	stmtCarInfo      *sql.Stmt
+	stmtStatsByModel *sql.Stmt
+	stmtStatsByType  *sql.Stmt
 }
 
 func (pg *storagePG) Init(connection string, usenotify bool) error {
@@ -139,6 +141,16 @@ func (pg *storagePG) prepare() (err error) {
 	if err != nil {
 		return err
 	}
+
+	pg.stmtStatsByModel, err = pg.db.Prepare(sqlStatsByModel)
+	if err != nil {
+		return err
+	}
+
+	pg.stmtStatsByType, err = pg.db.Prepare(sqlStatsByType)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -153,23 +165,25 @@ func (pg *storagePG) Track(regnum string, latitude float64, longitude float64) e
 }
 
 //Взять в аренду ТС
-func (pg *storagePG) Rent(rn string, dep string, agn string) error {
-	_, err := pg.stmtRentAction.Exec(opRent, rn, dep, agn)
+func (pg *storagePG) Rent(rn string, dep string, agn string) (int, error) {
+	var id int
+	err := pg.stmtRentAction.QueryRow(opRent, rn, dep, agn).Scan(&id)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	//TODO: parse text error. Replace text error
-	return nil
+	return id, nil
 }
 
 //Вернуть ТС
-func (pg *storagePG) Return(rn string, dep string, agn string) error {
-	_, err := pg.stmtRentAction.Exec(opReturn, rn, dep, agn)
+func (pg *storagePG) Return(rn string, dep string, agn string) (int, error) {
+	var id int
+	err := pg.stmtRentAction.QueryRow(opReturn, rn, dep, agn).Scan(&id)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	//TODO: parse text error. Replace text error
-	return nil
+	return id, nil
 }
 
 //TODO: refactor this. REPO
@@ -269,4 +283,60 @@ func (pg *storagePG) GetDepartments() ([]model.Department, error) {
 		deps = append(deps, d)
 	}
 	return deps, nil
+}
+
+func (pg *storagePG) getstats(s *sql.Stmt) ([]model.StatsDepartment, error) {
+	rows, err := s.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	sts := make([]*model.StatsDepartment, 0)
+	deps := make(map[string]*model.StatsDepartment, 0)
+	for rows.Next() {
+		var (
+			depname, entity string
+			count           int
+			dur             float64
+		)
+
+		err := rows.Scan(&depname, &entity, &count, &dur)
+		if err != nil {
+			return nil, err
+		}
+		s, exists := deps[depname]
+		if !exists {
+			s = &model.StatsDepartment{
+				Stats: make([]model.StatsItem, 0),
+			}
+			deps[depname] = s
+			sts = append(sts, s)
+		}
+		s.Department = depname
+		s.Stats = append(s.Stats, model.StatsItem{
+			Count:       count,
+			Duration:    time.Duration(dur * float64(time.Second)),
+			DurationStr: time.Duration(dur * float64(time.Second)).String(),
+			Entity:      entity,
+		})
+
+	}
+	res := make([]model.StatsDepartment, len(sts))
+	for i, s := range sts {
+		res[i] = *s
+	}
+	return res, nil
+
+}
+
+//TODO: test it
+//Статистика в разрезе подразделений и моделей
+func (pg *storagePG) GetStatsByModel() ([]model.StatsDepartment, error) {
+	return pg.getstats(pg.stmtStatsByModel)
+}
+
+//TODO: test it
+//Статистика в разрезе подразделений и тип ТС
+func (pg *storagePG) GetStatsByType() ([]model.StatsDepartment, error) {
+	return pg.getstats(pg.stmtStatsByType)
 }

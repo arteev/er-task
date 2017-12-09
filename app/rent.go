@@ -43,7 +43,7 @@ func (a *App) Rent(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return code, err
 	}
-	err = a.db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
+	_, err = a.db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -66,7 +66,7 @@ func (a *App) Return(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return code, err
 	}
-	err = a.db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
+	_, err = a.db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

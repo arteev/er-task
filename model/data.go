@@ -38,3 +38,19 @@ type DepartmentsResponse struct {
 	Response
 	Data []Department `json:"data"`
 }
+
+type StatsItem struct {
+	Entity      string
+	Count       int
+	Duration    time.Duration
+	DurationStr string
+}
+type StatsDepartment struct {
+	Department string
+	Stats      []StatsItem
+}
+
+type StatsDepartmentoResponse struct {
+	Response
+	Data []StatsDepartment `json:"data"`
+}
