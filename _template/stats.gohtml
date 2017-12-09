@@ -1,4 +1,39 @@
 {{template "header" .}}
+    
+    <script src="/static/js/stats.js"></script>  
+    
+    <div class="menu-btn"></div>
+        <a class="btn" href="/">История</a>
+        <a class="btn" href="/car">История с выбором ТС</a>               
+        <a class="btn" href="" onclick="reloadstats()">Обновить</a>
+    </div>
+        
     <h3>Статистика проката автомобилей в разрезе подразделений</h3>    
-    <link rel="stylesheet" type="text/css" href="/static/js/style.css" media="screen" />
+    
+
+    <div align="center">
+        <h4>Статистика в разрезе моделей</h4>
+    </div>
+    <table id="stats-model-dep"  class="center">
+        <thead>
+            <td>Подразделение</td>
+            <td>Модель</td>
+            <td>Средний срок аренды</td>
+        </thead>
+        <tbody id="stats-model-dep-body">
+        </tbody>
+    </table>
+
+    <div align="center">
+        <h4>Статистика в разрезе типов</h4>
+    </div>
+    <table id="stats-type-dep"  class="center">
+        <thead>
+            <td>Подразделение</td>
+            <td>Тип</td>
+            <td>Средний срок аренды</td>
+        </thead>
+        <tbody id="stats-type-dep-body">
+        </tbody>
+    </table>
 {{template "footer" .}}    

@@ -1,3 +1,45 @@
+table {    
+    border-collapse: collapse;
+    border: 2px solid gray;
+    width: 60%;
+    align:center;    
+}
+
+table.center {
+    margin-left:auto; 
+    margin-right:auto;
+}
+
+td,th {
+    padding: 3px; 
+    border: 1px solid black; 
+}
+
+thead {
+    font-weight: bold;
+}   
+
+.btn {
+    border: none;
+    background-color:#008CBA;
+    color: white;
+    padding: 15px 32px;
+    font-size: 18px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    
+}
+
+.menu-btn{
+    padding-bottom: 24px;
+}
+
+.table-row-group {
+    background: aquamarine;
+    color: black;
+    font-weight: bold;
+}
 .itemhist {
     font-style: normal;
    

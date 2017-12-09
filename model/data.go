@@ -40,14 +40,14 @@ type DepartmentsResponse struct {
 }
 
 type StatsItem struct {
-	Entity      string
-	Count       int
-	Duration    time.Duration
-	DurationStr string
+	Entity      string        `json:"entity"`
+	Count       int           `json:"count"`
+	Duration    time.Duration `json:"-"`
+	DurationStr string        `json:"avgduration"`
 }
 type StatsDepartment struct {
-	Department string
-	Stats      []StatsItem
+	Department string      `json:"department"`
+	Stats      []StatsItem `json:"entities"`
 }
 
 type StatsDepartmentoResponse struct {

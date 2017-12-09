@@ -51,39 +51,25 @@ $(document).ready(function () {
         tab = document.getElementById("thistory")
         document.body.insertBefore(item, tab)
     }
-
-    startWS = function () {
-        if (window["WebSocket"]) {
-            conn = new WebSocket("ws://" + document.location.host + "/ws");
-            conn.onopen = function () {
-                $(".errorinfo").remove();
-                reload();
-            };
-            conn.onclose = function (evt) {
-                ShowError("WebSocket connection closed. Retry after 5 sec.")
-                conn = null
-                setTimeout(function () {
-                    startWS();
-                }, 5000)
-            }
-            conn.onmessage = function (evt) {
-                appendItem(JSON.parse(evt.data), true);
-            }
-        } else {
-            ShowError("Error: browser does not support WebSockets")
-        }
-    }
-
-
-    startWS()
-
-    $("#btn-refresh").click(function () {
-        reload();
-    })
+       
 
     $("#btn-car").click(function () {
         window.location = "/car"
     })
+    window.reload = reload;
 
+    wsopen=function(){
+        $(".errorinfo").remove();
+        reload();
+    }
+    wsclose=function(evt) {
+        ShowError("WebSocket connection closed. Retry after 5 sec.")
+    }
+    wsmessage=function (evt) {
+        appendItem(JSON.parse(evt.data), true);
+    }
+    if (!window.startws(5000,wsmessage,wsopen,wsclose)) {
+        ShowError("Error: browser does not support WebSockets")
+    }
 
 });

@@ -39,10 +39,9 @@ $(document).ready(function () {
         }
     }
 
-    reloadcar = function() {
+    reloadcar = function(car) {
         selectedCarInfo = null;
-        $.getJSON("/api/v1/car/"+car, function (data) {
-            
+        $.getJSON("/api/v1/car/"+car, function (data) {            
             if (data.error) {
                 alert(data.error);
                 return;
@@ -50,9 +49,7 @@ $(document).ready(function () {
             selectedCarInfo  = data.data;
             $("#car-rn").text(data.data.rn);
             $("#car-type").text(data.data.model.cartype.type);
-            $("#car-model").text(data.data.model.name);
-            
-            
+            $("#car-model").text(data.data.model.name);                      
             isrent = data.data.isrent === 1
             $("#agent").prop('disabled',isrent);
             if (isrent) {
@@ -67,12 +64,16 @@ $(document).ready(function () {
                 $("#caraction").text("Взять в аренду");
                 $("#agent").val("");
                 $("#dep").val("");
-            }           
-            
-        });
+            }         
+            showcar();
+        })
+            .fail(function(){
+                ShowError("Транспортное средство "+car+" не найдено");               
+                clear();
+                $("#carsearch").val(car);
+            });
     } 
-    reload = function () {
-        car = $("#carsearch").val();        
+    reload = function (car) {                
         $("#tbodyhistory").children().remove();       
         if (!car) {
             return;
@@ -82,8 +83,7 @@ $(document).ready(function () {
                 appendItem(val, false);
             });
         }); 
-        reloadcar();
-       
+        reloadcar(car);       
     }
 
     ShowError = function (error) {
@@ -95,68 +95,35 @@ $(document).ready(function () {
         setTimeout(function () {
             $(item).hide(2000);
         }, 5000);     
-    }
-
-    startWS = function (mustreload) {
-        if (window["WebSocket"]) {
-            conn = new WebSocket("ws://" + document.location.host + "/ws");
-            conn.onopen = function () {
-                $(".errorinfo").remove();
-                if (mustreload) {// Для загрузки после переподключения 
-                    reload();                    
-                }               
-
-                setInterval(function(){ conn.send("ping") }, 1000 )
-
-            };
-            conn.onclose = function (evt) {
-                ShowError("WebSocket connection closed. Retry after 5 sec.")
-                conn = null
-                setTimeout(function () {
-                    startWS(true);
-                }, 5000)
-            }
-            conn.onmessage = function (evt) {
-                data = JSON.parse(evt.data);
-                car = $("#carsearch").val();      
-                if (car && data.rn == car) {
-                    appendItem(data, true);
-                }
-                reloadcar();                
-            }
-        } else {
-            ShowError("Error: browser does not support WebSockets")
-        }
-    }
-
+    }  
     
-    
-    showcar = function(){
-        car = $("#carsearch").val();      
-        if (!car) {
-            ShowError("Выберете транспортное средство");
-        } else {
-            $("#carinfo").removeClass("hide").addClass("show")
-        }
-       
+    showcar = function(){        
+        $("#carinfo").removeClass("hide").addClass("show")        
         $("#carsearch").prop('disabled',true);
         $("#btn-show").prop('disabled',true);
-    };
-
-    $("#btn-show").click(function () {        
-        event.preventDefault();       
-        showcar();             
-        reload();
-    });   
+    };    
     
-    $("#btn-clear").click(function(){
-        event.preventDefault();   
+    clear = function(){
         $("#tbodyhistory").children().remove(); 
         $("#carsearch").prop('disabled',false);
         $("#carsearch").select();
         $("#carsearch").val("");
         $("#carinfo").removeClass("show").addClass("hide")
         $("#btn-show").prop('disabled',false);
+    }
+
+    $("#btn-show").click(function () {        
+        event.preventDefault();  
+        car = $("#carsearch").val();
+        if (!car) {
+            ShowError("Выберете транспортное средство");
+            return;
+        }        
+        reload(car);        
+    });  
+    $("#btn-clear").click(function(){
+        event.preventDefault();   
+        clear();
     });
 
     rent = function(prn,pdep,pagent) {
@@ -214,8 +181,33 @@ $(document).ready(function () {
     });
 
     $("#carsearch").select();       
-    startWS(false);
+   
     if ($("#carsearch").val()!=="") {
         showcar();
     }
+
+    mustreload = false;
+    wsopen=function(){
+        $(".errorinfo").remove();
+        if (mustreload) {
+            // Для загрузки после переподключения 
+            reload();                    
+        }  
+    }
+    wsclose=function(evt) {
+        mustreload = true;
+        ShowError("WebSocket connection closed. Retry after 5 sec.")
+    }
+    wsmessage=function (evt) {
+        data = JSON.parse(evt.data);
+        car = $("#carsearch").val();      
+        if (car && data.rn == car) {
+            appendItem(data, true);
+        }
+        reloadcar(car);  
+    }
+    if (!window.startws(5000,wsmessage,wsopen,wsclose)) {
+        ShowError("Error: browser does not support WebSockets")
+    }
+
 });

@@ -1,16 +1,20 @@
 {{template "header" .}}
+    
+
+    <script src="/static/js/ws.js"></script>    
+    <script src="/static/js/history.js"></script>    
+    
+ 
+    <div class="menu-btn">
+        <a class="btn" href="/car">История с выбором ТС</a>
+        <a class="btn" href="/stats">Статистика</a>
+        <a class="btn" href="" onclick="reload()">Обновить</a>
+    </div>
     <h3>История проката автомобилей</h3> 
 
-    <script src="/static/js/history.js"></script>    
-    <link rel="stylesheet" type="text/css" href="/static/js/style.css" media="screen" />
- 
-    <form action="">
-        <input id="btn-car" type="button" value="Информация по ТС">
-        <input id="btn-refresh" type="button" value="Обновить">
-        
-    </form>
+       
     <br/>
-    <table id="thistory" border=1>
+    <table id="thistory" class="center">
         <thead>
             <tr>
                 <td>Операция</td>

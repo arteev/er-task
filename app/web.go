@@ -1,6 +1,7 @@
 package app
 
 import (
+	"html/template"
 	"net/http"
 	"sync"
 
@@ -44,7 +45,6 @@ func (a *App) Stats(w http.ResponseWriter, r *http.Request) {
 
 var muTemp sync.Mutex
 
-/*
 func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		muTemp.Lock()
@@ -52,4 +52,4 @@ func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 		templs = template.Must(template.ParseGlob("_template/*"))
 		fn(w, r)
 	}
-}*/
+}

@@ -1,7 +1,13 @@
 {{template "header" .}}
-<h3>История проката транспортного средства</h3> 
-<script src="/static/js/car.js"></script>
-<link rel="stylesheet" type="text/css" href="/static/js/style.css" media="screen" />
+    <script src="/static/js/ws.js"></script>
+    <script src="/static/js/car.js"></script>
+    <h3>История проката транспортного средства</h3> 
+
+    <div class="menu-btn">
+            <a class="btn" href="/">История</a>
+            <a class="btn" href="/car">История с выбором ТС</a>               
+            <a class="btn" href="/stats">Статистика</a>
+    </div>
 
 <form action="">
     <div>
@@ -49,7 +55,7 @@
 
 </form>
 <br/>
-<table id="thistory" border=1>
+<table id="thistory" class="center">
     <thead>
         <tr>
             <td>Операция</td>

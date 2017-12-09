@@ -316,7 +316,7 @@ func (pg *storagePG) getstats(s *sql.Stmt) ([]model.StatsDepartment, error) {
 		s.Stats = append(s.Stats, model.StatsItem{
 			Count:       count,
 			Duration:    time.Duration(dur * float64(time.Second)),
-			DurationStr: time.Duration(dur * float64(time.Second)).String(),
+			DurationStr: time.Duration(dur * float64(time.Second) / float64(count)).String(),
 			Entity:      entity,
 		})
 

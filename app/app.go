@@ -139,7 +139,7 @@ func (a *App) init() http.Handler {
 			IsAPI:   false,
 			Path:    "/stats",
 			Methods: []string{"GET"},
-			Handler: a.Stats,
+			Handler: a.autoReloadTemplates(a.Stats),
 		},
 		{
 			IsAPI:   false,
