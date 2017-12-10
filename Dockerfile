@@ -1,8 +1,8 @@
 FROM alpine
 
 COPY er-task /app/
-COPY _template /app/_template/
-COPY _static/js /app/_static/js/
+COPY templates /app/templates/
+COPY static/js /app/static/js/
 
 
 RUN adduser -D -u 1000 user 

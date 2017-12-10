@@ -14,9 +14,3 @@ services:
         image: "redis:alpine"
         ports:
             - 6379:6379
-
-    adminer:
-        image: adminer
-        restart: always
-        ports:
-            - 8080:8080
