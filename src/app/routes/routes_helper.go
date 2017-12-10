@@ -1,9 +1,8 @@
-package tests
+package routes
 
 import (
 	"net/http"
 
-	"github.com/arteev/er-task/src/app/routes"
 	"github.com/arteev/er-task/src/storage"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -17,6 +16,6 @@ func GetRoutes(db storage.Storage) *mux.Router {
 			f(w, r)
 		}
 	}
-	routes, _ := routes.GetHandler(nil, ctxdb)
+	routes, _ := GetHandler(nil, ctxdb)
 	return routes
 }

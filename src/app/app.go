@@ -98,30 +98,8 @@ func (a *App) initroutes() http.Handler {
 			Handler: ws.GetServer(a.db.Notify()).Handler,
 		},
 	}
-	return a.regroutes()
-}
-
-func (a *App) regroutes() (handler http.Handler) {
-	/*a.Routes = mux.NewRouter()
-	a.Routes.PathPrefix("/static/").Handler(
-		http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-	subrouter := a.Routes.PathPrefix("/api/v1/").Subrouter()
-	regroutes := a.preroutes
-	regroutes = append(regroutes, routes.Routes...)
-	for _, r := range regroutes {
-		if r.IsAPI {
-			rnew := subrouter.HandleFunc(r.Path, a.ContextInit(r.Handler))
-			if len(r.Methods) != 0 {
-				rnew.Methods(r.Methods...)
-			}
-		} else {
-			a.Routes.HandleFunc(r.Path, a.ContextInit(r.Handler))
-		}
-	}
-	logroutes := handlers.LoggingHandler(os.Stdout, a.Routes)
-	return logroutes*/
-	_, handler = routes.GetHandler(a.preroutes, a.ContextInit)
-	return
+	_, handler := routes.GetHandler(a.preroutes, a.ContextInit)
+	return handler
 }
 
 //Run run application. Retruns  a error when failure
