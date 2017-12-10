@@ -408,17 +408,19 @@ INSERT INTO "DEPARTMENT"("NAME") VALUES ('Ярославль');
 
 -- ГЕНЕРАЦИЯ ТЕСТОВЫХ ДАННЫХ ДЛЯ CAR+CARGOODS
 do $$
-DECLARE R RECORD;
-DECLARE NUM INT;
-DECLARE CNEW INT; -- Количество зкземпляров данной модели
-DECLARE MAXCARMODEL FLOAT=5.00;
-declare DEPTS integer[];
-DECLARE RNDDEP integer;
-DECLARE IDCAR integer;
+DECLARE
+	R RECORD;
+  NUM INT;
+  CNEW INT; -- Количество зкземпляров данной модели
+  MAXCARMODEL FLOAT=5.00;
+  DEPTS integer[];
+  RNDDEP integer;
+  IDCAR integer;
+	RN VARCHAR(20);
 begin
   DEPTS = ARRAY(SELECT "ID" FROM "DEPARTMENT");
   NUM = 1;
-  FOR r in SELECT "ID" FROM "MODEL"
+  FOR r in SELECT M."ID",T."CODE" FROM "MODEL" M, "CARTYPE" T WHERE M."CTYPE"=T."ID"
   LOOP
     CNEW = random()*MAXCARMODEL+1;
     LOOP
@@ -427,7 +429,15 @@ begin
       END IF;
       NUM = NUM + 1;
       CNEW = CNEW - 1;
-      INSERT INTO "CAR"("MODEL","REGNUM") VALUES (R."ID",'X'||NUM||'XX77RUS') RETURNING "CAR"."ID" INTO IDCAR;
+			IF r."CODE"='AUTO' THEN
+				RN = 'A'||NUM||'AA77RUS';
+			ELSEIF r."CODE"='MOTORBIKE' THEN
+				RN = 'B'||NUM||'BB77RUS';
+			ELSE
+				RN = 'M'||NUM||'MM77RUS';
+			END IF;
+
+      INSERT INTO "CAR"("MODEL","REGNUM") VALUES (R."ID",RN) RETURNING "CAR"."ID" INTO IDCAR;
       LOOP
         RNDDEP = random() * (array_length(DEPTS,1)+1);
         IF DEPTS[RNDDEP] IS NOT NULL THEN
@@ -444,13 +454,13 @@ end $$;
 --Аренда
 INSERT INTO "RENTAL"("TSWORK","OPER","CAR","DEPT","AGENTNAME") VALUES (
 		CURRENT_TIMESTAMP,1,
-		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = 'X20XX77RUS'),
+		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = 'A20AA77RUS'),
 		(SELECT "DEPARTMENT"."ID" FROM "DEPARTMENT" WHERE "DEPARTMENT"."NAME" = 'Омск'),
 		'Иванов Иван Иванович');
 
 --Возврат
 INSERT INTO "RENTAL"("TSWORK","OPER","CAR","DEPT","AGENTNAME") VALUES (
 		CURRENT_TIMESTAMP,0,
-		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = 'X20XX77RUS'),
+		(SELECT "CAR"."ID" from "CAR" WHERE  "CAR"."REGNUM" = 'A20AA77RUS'),
 		(SELECT "DEPARTMENT"."ID" FROM "DEPARTMENT" WHERE "DEPARTMENT"."NAME" = 'Рим'),
 		'Иванов Иван Иванович');
