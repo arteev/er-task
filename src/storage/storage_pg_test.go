@@ -68,10 +68,7 @@ func addcarstorage(pg *storagePG, car model.Car) error {
 		return err
 	}
 	_, err = pg.db.Exec(`INSERT INTO "CARGOODS"("DEPT","CAR") VALUES(1,$1)`, car.ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func addCar(s *storagePG, id int, t *testing.T) model.Car {

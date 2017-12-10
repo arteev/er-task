@@ -11,7 +11,7 @@ import (
 )
 
 //Index - /index Стартовая страница просмотр истории проката автомобилей
-func (a *App) Index(w http.ResponseWriter, r *http.Request) {
+func (a *app) Index(w http.ResponseWriter, r *http.Request) {
 	err := templs.ExecuteTemplate(w, "index.gohtml", nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -20,7 +20,7 @@ func (a *App) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 //Car - обработчик для страницы /car просмотр истории и действия с ТС
-func (a *App) Car(w http.ResponseWriter, r *http.Request) {
+func (a *app) Car(w http.ResponseWriter, r *http.Request) {
 	var car struct {
 		RN string
 	}
@@ -35,7 +35,7 @@ func (a *App) Car(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) Stats(w http.ResponseWriter, r *http.Request) {
+func (a *app) Stats(w http.ResponseWriter, r *http.Request) {
 	err := templs.ExecuteTemplate(w, "stats.gohtml", nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -45,7 +45,7 @@ func (a *App) Stats(w http.ResponseWriter, r *http.Request) {
 
 var muTemp sync.Mutex
 
-func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
+func (a *app) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		muTemp.Lock()
 		defer muTemp.Unlock()
@@ -54,7 +54,7 @@ func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (a *App) ContextInit(f http.HandlerFunc) http.HandlerFunc {
+func (a *app) ContextInit(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		context.Set(r, "storage", a.db)
 		f(w, r)

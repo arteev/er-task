@@ -76,7 +76,7 @@ func (pg *storagePG) Done() error {
 func (pg *storagePG) initlistener() error {
 	pgevent := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			fmt.Println("pgbroadcast: ", err.Error())
+			fmt.Println("pgevent error: ", err.Error())
 		}
 	}
 	pg.listener = pq.NewListener(pg.connection, 10*time.Second, time.Minute, pgevent)
@@ -100,7 +100,6 @@ func (pg *storagePG) handleNotifications() {
 			if err != nil {
 				log.Println("Error JSON: ", err)
 			} else {
-				fmt.Println("notify: ", notify)
 				go func() { pg.notify <- notify }()
 			}
 		case <-time.After(pingPeriod):

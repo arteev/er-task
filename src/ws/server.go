@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/arteev/er-task/src/storage"
 
@@ -18,7 +17,7 @@ type Connection interface {
 }
 
 type Server interface {
-	Handler(http.ResponseWriter, *http.Request)
+	Handler(http.ResponseWriter, *http.Request) (int, error)
 	Append(Connection)
 	Remove(c Connection)
 	Broadcast([]byte)
@@ -42,15 +41,14 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (s *server) Handler(w http.ResponseWriter, r *http.Request) {
+func (s *server) Handler(w http.ResponseWriter, r *http.Request) (int, error) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-	//TODO : error
 	if err != nil {
-		log.Println(err)
-		return
-
+		log.Printf("Could not upgrader.Upgrade: %s", err)
+		return http.StatusInternalServerError, err
 	}
 	accept(s, conn)
+	return http.StatusAccepted, nil
 }
 
 func (s *server) Append(c Connection) {
@@ -65,6 +63,9 @@ func (s *server) Broadcast(b []byte) {
 	s.broadcast <- b
 }
 
+//GetServer запускает сервет который обслуживает websocket клиентов
+//при получении сообщения из канала storage.Notification отправляет
+//всем подключенным клиентам
 func GetServer(n chan storage.Notification) Server {
 	onceServer.Do(func() {
 		instanceServer = &server{
@@ -80,7 +81,6 @@ func GetServer(n chan storage.Notification) Server {
 }
 
 func (s *server) run() {
-
 	for {
 		select {
 		case c := <-s.append:
@@ -102,16 +102,12 @@ func (s *server) run() {
 			//Уведомление от хранилища
 			nws, err := storage.RentDataFromStorage(n)
 			if err != nil {
-				log.Printf("Could not cast pares notify storage:%v,", err)
+				log.Printf("Could not cast notify from storage:%v,", err)
 			}
 			go func() {
 				b, _ := json.Marshal(nws)
 				s.Broadcast(b)
-				log.Println("notify", nws)
 			}()
-		case <-time.After(10 * time.Second):
-			log.Println(len(s.connections))
-
 		}
 	}
 }

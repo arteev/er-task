@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/arteev/er-task/src/app/routes"
 	"github.com/arteev/er-task/src/cache"
@@ -23,14 +22,15 @@ func init() {
 }
 
 //App - Application
-type App struct {
+type app struct {
 	db storage.Storage
 	//routes           *mux.Router
 	connectionString string
+	redis            string
 	preroutes        []routes.Route
 }
 
-func (a *App) cachehit(name string, hit bool) {
+func (a *app) cachehit(name string, hit bool) {
 	if hit {
 		log.Printf("Cache hit: %s", name)
 	} else {
@@ -38,24 +38,17 @@ func (a *App) cachehit(name string, hit bool) {
 	}
 }
 
-func (a *App) initStorage() error {
-	if val, ok := os.LookupEnv("CACHE"); ok && val == "true" {
-		if rs, ok := os.LookupEnv("REDIS"); !ok {
-			rs = "127.0.0.1:6379"
-		} else {
-			a.db = cache.NewCacheRedis(rs, storage.GetStorage(), a.cachehit)
-		}
+func (a *app) initStorage() error {
+	if a.redis != "" {
+		a.db = cache.NewCacheRedis(a.redis, storage.GetStorage(), a.cachehit)
 	} else {
 		a.db = storage.GetStorage()
 	}
 	err := a.db.Init(a.connectionString, true)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (a *App) Init() error {
+func (a *app) Init() error {
 	err := a.initStorage()
 	if err != nil {
 		return err
@@ -63,7 +56,7 @@ func (a *App) Init() error {
 	a.initroutes()
 	return nil
 }
-func (a *App) initroutes() http.Handler {
+func (a *app) initroutes() http.Handler {
 	a.preroutes = []routes.Route{
 		//render routes
 		{
@@ -95,7 +88,7 @@ func (a *App) initroutes() http.Handler {
 			IsAPI:   false,
 			Path:    "/ws",
 			Methods: []string{},
-			Handler: ws.GetServer(a.db.Notify()).Handler,
+			Handler: routes.ErrorHandler(ws.GetServer(a.db.Notify()).Handler),
 		},
 	}
 	_, handler := routes.GetHandler(a.preroutes, a.ContextInit)
@@ -103,8 +96,10 @@ func (a *App) initroutes() http.Handler {
 }
 
 //Run run application. Retruns  a error when failure
-func (a *App) Run(addr, connection string) error {
+func Run(addr, connection string, redis string) error {
+	a := &app{}
 	a.connectionString = connection
+	a.redis = redis
 	err := a.Init()
 	if err != nil {
 		return err

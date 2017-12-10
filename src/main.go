@@ -17,8 +17,11 @@ func main() {
 	if conn, ok := os.LookupEnv("POSTGRES"); ok {
 		connection = conn
 	}
-
-	if err := new(app.App).Run(addr, connection); err != nil {
+	rconn := ""
+	if redis, ok := os.LookupEnv("REDIS"); ok {
+		rconn = redis
+	}
+	if err := app.Run(addr, connection, rconn); err != nil {
 		log.Fatal(err)
 	}
 }

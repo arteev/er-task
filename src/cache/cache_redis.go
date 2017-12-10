@@ -19,16 +19,16 @@ type rediscache struct {
 
 	codec    *cache.Codec
 	conn     *redis.Client
-	callback CacheHitMissCallback
+	callback HitMissCallback
 
 	getcars []model.Car
 }
 
-//CacheHitMissCallback callback function. Для подсчета статистики
-type CacheHitMissCallback = func(name string, hit bool)
+//HitMissCallback callback function. Для подсчета статистики
+type HitMissCallback func(name string, hit bool)
 
 //NewCacheRedis - возвращает обертку над хранилищем и кэширует данные
-func NewCacheRedis(addr string, s storage.Storage, f CacheHitMissCallback) storage.Storage {
+func NewCacheRedis(addr string, s storage.Storage, f HitMissCallback) storage.Storage {
 	return &rediscache{
 		Storage:  s,
 		callback: f,
