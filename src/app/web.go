@@ -57,6 +57,7 @@ func (a *app) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 func (a *app) ContextInit(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		context.Set(r, "storage", a.db)
+		context.Set(r, "templates", templs)
 		f(w, r)
 	}
 }

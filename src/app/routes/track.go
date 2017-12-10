@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -10,35 +9,29 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//Handler для трекинга ТС
-func Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
+//Tracking Handler для трекинга ТС
+func Tracking(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
+	//TODO : //через worker????
 	db := context.Get(r, "storage").(storage.Storage)
 	vars := mux.Vars(r)
 	carnum := vars["car"]
 	x, err := strconv.ParseFloat(vars["x"], 64)
 	if err != nil {
-		return http.StatusBadRequest, err
+		return nil, http.StatusBadRequest, err
 	}
 
 	y, err := strconv.ParseFloat(vars["y"], 64)
 	if err != nil {
-		return http.StatusBadRequest, err
+		return nil, http.StatusBadRequest, err
 	}
 
 	if err = db.Track(carnum, x, y); err != nil {
-		return http.StatusNotFound, err
+		return nil, http.StatusNotFound, err
 	}
 
-	//TODO: refactor this. Middeware
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	err = json.NewEncoder(w).Encode(&struct {
+	return &struct {
 		Message string `json:"message"`
 	}{
 		"success",
-	})
-
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-	return http.StatusOK, nil
+	}, http.StatusOK, nil
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -90,9 +91,19 @@ func (a *app) initroutes() http.Handler {
 			Methods: []string{},
 			Handler: routes.ErrorHandler(ws.GetServer(a.db.Notify()).Handler),
 		},
+		{
+			IsAPI:   true,
+			Path:    "/test",
+			Handler: routes.JSONHandler(fn),
+		},
 	}
 	_, handler := routes.GetHandler(a.preroutes, a.ContextInit)
 	return handler
+}
+
+func fn(q http.ResponseWriter, r *http.Request) (interface{}, int, error) {
+	//return &struct{ MessageNew string }{"TEST"}, http.StatusOK, nil
+	return &struct{ MessageNew string }{"TEST"}, http.StatusInternalServerError, fmt.Errorf("this is error")
 }
 
 //Run run application. Retruns  a error when failure

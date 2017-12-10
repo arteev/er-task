@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -40,50 +39,37 @@ func newRentData(r *http.Request) (*RentData, int, error) {
 	return rd, 0, nil
 }
 
-func Rent(w http.ResponseWriter, r *http.Request) (int, error) {
+func Rent(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
 	db := context.Get(r, "storage").(storage.Storage)
 	rd, code, err := newRentData(r)
 	if err != nil {
-		return code, err
+		return nil, code, err
 	}
 	_, err = db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	err = json.NewEncoder(w).Encode(&struct {
+	return &struct {
 		Message string `json:"message"`
 	}{
 		"success",
-	})
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	return http.StatusOK, nil
+	}, http.StatusOK, nil
 }
 
-func Return(w http.ResponseWriter, r *http.Request) (int, error) {
+func Return(w http.ResponseWriter, r *http.Request) (interface{}, int, error) {
 	db := context.Get(r, "storage").(storage.Storage)
 	rd, code, err := newRentData(r)
 	if err != nil {
-		return code, err
+		return nil, code, err
 	}
 	_, err = db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
 	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	err = json.NewEncoder(w).Encode(&struct {
+	return &struct {
 		Message string `json:"message"`
 	}{
 		"success",
-	})
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	return http.StatusOK, nil
+	}, http.StatusOK, nil
 }
