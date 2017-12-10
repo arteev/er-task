@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//Route - using Routes for web application routes
 type Route struct {
 	IsAPI   bool
 	Path    string
@@ -15,7 +16,7 @@ type Route struct {
 	Handler http.HandlerFunc
 }
 
-//Routes web appication
+//Routes - web appication routes
 var Routes = []Route{
 	{
 		IsAPI:   true,
@@ -76,6 +77,31 @@ var Routes = []Route{
 		Path:    "/tracking/{car}/{x}/{y}",
 		Methods: []string{"PUT"},
 		Handler: JSONHandler(Tracking),
+	},
+	//render
+	{
+		IsAPI:   false,
+		Path:    "/",
+		Methods: []string{"GET"},
+		Handler: Index,
+	},
+	{
+		IsAPI:   false,
+		Path:    "/car",
+		Methods: []string{"GET"},
+		Handler: Car,
+	},
+	{
+		IsAPI:   false,
+		Path:    "/stats",
+		Methods: []string{"GET"},
+		Handler: Stats,
+	},
+	{
+		IsAPI:   false,
+		Path:    "/car/{rn}",
+		Methods: []string{"GET"},
+		Handler: Car,
 	},
 }
 
