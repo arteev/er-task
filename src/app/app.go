@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -59,31 +58,6 @@ func (a *app) Init() error {
 }
 func (a *app) initroutes() http.Handler {
 	a.preroutes = []routes.Route{
-		//render routes
-		{
-			IsAPI:   false,
-			Path:    "/",
-			Methods: []string{"GET"},
-			Handler: a.Index,
-		},
-		{
-			IsAPI:   false,
-			Path:    "/car",
-			Methods: []string{"GET"},
-			Handler: a.Car,
-		},
-		{
-			IsAPI:   false,
-			Path:    "/stats",
-			Methods: []string{"GET"},
-			Handler: a.Stats,
-		},
-		{
-			IsAPI:   false,
-			Path:    "/car/{rn}",
-			Methods: []string{"GET"},
-			Handler: a.Car,
-		},
 		// websocket
 		{
 			IsAPI:   false,
@@ -91,19 +65,9 @@ func (a *app) initroutes() http.Handler {
 			Methods: []string{},
 			Handler: routes.ErrorHandler(ws.GetServer(a.db.Notify()).Handler),
 		},
-		{
-			IsAPI:   true,
-			Path:    "/test",
-			Handler: routes.JSONHandler(fn),
-		},
 	}
 	_, handler := routes.GetHandler(a.preroutes, a.ContextInit)
 	return handler
-}
-
-func fn(q http.ResponseWriter, r *http.Request) (interface{}, int, error) {
-	//return &struct{ MessageNew string }{"TEST"}, http.StatusOK, nil
-	return &struct{ MessageNew string }{"TEST"}, http.StatusInternalServerError, fmt.Errorf("this is error")
 }
 
 //Run run application. Retruns  a error when failure
