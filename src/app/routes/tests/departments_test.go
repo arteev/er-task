@@ -1,4 +1,4 @@
-package app
+package tests
 
 import (
 	"encoding/json"
@@ -16,14 +16,13 @@ func TestDepartments(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
 	defer fakestorage.Done()
 
 	fakestorage.adddepart(1, "dep1")
 	r, _ := http.NewRequest("GET", "/api/v1/departments", nil)
 	w := httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	//Invoked
 	if !fakestorage.invokedDepartments {

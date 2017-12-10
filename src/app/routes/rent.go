@@ -1,10 +1,12 @@
-package app
+package routes
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 
+	"github.com/arteev/er-task/src/storage"
+	"github.com/gorilla/context"
 	"github.com/gorilla/schema"
 )
 
@@ -38,12 +40,13 @@ func newRentData(r *http.Request) (*RentData, int, error) {
 	return rd, 0, nil
 }
 
-func (a *App) Rent(w http.ResponseWriter, r *http.Request) (int, error) {
+func Rent(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
 	rd, code, err := newRentData(r)
 	if err != nil {
 		return code, err
 	}
-	_, err = a.db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
+	_, err = db.Rent(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -61,12 +64,13 @@ func (a *App) Rent(w http.ResponseWriter, r *http.Request) (int, error) {
 	return http.StatusOK, nil
 }
 
-func (a *App) Return(w http.ResponseWriter, r *http.Request) (int, error) {
+func Return(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
 	rd, code, err := newRentData(r)
 	if err != nil {
 		return code, err
 	}
-	_, err = a.db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
+	_, err = db.Return(rd.RegNum, rd.DeptCode, rd.Agent)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

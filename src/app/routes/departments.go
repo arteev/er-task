@@ -1,4 +1,4 @@
-package app
+package routes
 
 import (
 	"encoding/json"
@@ -6,12 +6,14 @@ import (
 	"net/http"
 
 	"github.com/arteev/er-task/src/model"
+	"github.com/arteev/er-task/src/storage"
+	"github.com/gorilla/context"
 )
 
-//TODO: test it
 //Departments - handler for api. Returns list of the departments
-func (a *App) Departments(w http.ResponseWriter, r *http.Request) (int, error) {
-	deps, err := a.db.GetDepartments()
+func Departments(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
+	deps, err := db.GetDepartments()
 	if err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err

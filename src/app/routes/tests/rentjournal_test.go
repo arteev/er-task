@@ -1,4 +1,4 @@
-package app
+package tests
 
 import (
 	"encoding/json"
@@ -16,8 +16,7 @@ func TestRentJournal(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
 	defer fakestorage.Done()
 
 	dep := fakestorage.adddepart(1, "dep1")
@@ -30,7 +29,7 @@ func TestRentJournal(t *testing.T) {
 	}
 	r, _ := http.NewRequest("GET", "/api/v1/rentjournal", nil)
 	w := httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	//Invoked
 	if !fakestorage.invokedRentJournal {
@@ -62,7 +61,7 @@ func TestRentJournal(t *testing.T) {
 	}
 	r, _ = http.NewRequest("GET", "/api/v1/rentjournal", nil)
 	w = httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	err = json.Unmarshal(w.Body.Bytes(), rds)
 	if err != nil {
@@ -79,8 +78,7 @@ func TestRentJournalByRNCar(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
 	defer fakestorage.Done()
 	dep := fakestorage.adddepart(1, "dep1")
 	md := fakestorage.addmodel(1, "bmw")
@@ -93,12 +91,12 @@ func TestRentJournalByRNCar(t *testing.T) {
 	//test not found
 	r, _ := http.NewRequest("GET", "/api/v1/rentjournal/000", nil)
 	w := httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusNotFound, w.Code)
 
 	r, _ = http.NewRequest("GET", "/api/v1/rentjournal/X000XX", nil)
 	w = httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	rds := &model.RentDataResponse{}
 	err = json.Unmarshal(w.Body.Bytes(), rds)

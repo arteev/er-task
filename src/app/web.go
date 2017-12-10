@@ -5,12 +5,10 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/gorilla/context"
+
 	"github.com/gorilla/mux"
 )
-
-type cardata struct {
-	RN string
-}
 
 //Index - /index Стартовая страница просмотр истории проката автомобилей
 func (a *App) Index(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +21,9 @@ func (a *App) Index(w http.ResponseWriter, r *http.Request) {
 
 //Car - обработчик для страницы /car просмотр истории и действия с ТС
 func (a *App) Car(w http.ResponseWriter, r *http.Request) {
-	var car cardata
+	var car struct {
+		RN string
+	}
 	vars := mux.Vars(r)
 	if rn, ok := vars["rn"]; ok {
 		car.RN = rn
@@ -51,5 +51,12 @@ func (a *App) autoReloadTemplates(fn http.HandlerFunc) http.HandlerFunc {
 		defer muTemp.Unlock()
 		templs = template.Must(template.ParseGlob("templates/*"))
 		fn(w, r)
+	}
+}
+
+func (a *App) ContextInit(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		context.Set(r, "storage", a.db)
+		f(w, r)
 	}
 }

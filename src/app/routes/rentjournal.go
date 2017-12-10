@@ -1,4 +1,4 @@
-package app
+package routes
 
 import (
 	"encoding/json"
@@ -7,14 +7,17 @@ import (
 	"net/http"
 
 	"github.com/arteev/er-task/src/model"
+	"github.com/arteev/er-task/src/storage"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
 //RentJournal - handler for api. Returns list of the rental cars
-func (a *App) RentJournal(w http.ResponseWriter, r *http.Request) (int, error) {
+func RentJournal(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
 	vars := mux.Vars(r)
 	rncar := vars["rn"]
-	rds, err := a.db.GetRentJornal(rncar)
+	rds, err := db.GetRentJornal(rncar)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

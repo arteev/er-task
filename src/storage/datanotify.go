@@ -8,8 +8,8 @@ import (
 
 const pglayout = "2006-01-02T15:04:05.999999"
 
-func RentDataFromStorage(n Notification) *model.RentData {
-	//TODO: refactor this
+//RentDataFromStorage returns model.RentData from notification storage
+func RentDataFromStorage(n Notification) (*model.RentData, error) {
 	ret := &model.RentData{}
 	if val, ok := n.Data["TYPE"]; ok {
 		ret.Type = val.(string)
@@ -23,9 +23,6 @@ func RentDataFromStorage(n Notification) *model.RentData {
 	if val, ok := n.Data["AGENT"]; ok {
 		ret.Agent = val.(string)
 	}
-	if val, ok := n.Data["AGENTCODE"]; ok {
-		ret.SS = val.(string)
-	}
 	if val, ok := n.Data["OPER"]; ok {
 		ret.Oper = val.(string)
 	}
@@ -33,12 +30,11 @@ func RentDataFromStorage(n Notification) *model.RentData {
 		var err error
 		ret.Dateoper, err = time.Parse(pglayout, val.(string))
 		if err != nil {
-			//log it
-			//log.Println(err)
+			return nil, err
 		}
 	}
 	if val, ok := n.Data["DEPT"]; ok {
 		ret.Dept = val.(string)
 	}
-	return ret
+	return ret, nil
 }

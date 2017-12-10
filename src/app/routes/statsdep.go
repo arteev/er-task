@@ -1,4 +1,4 @@
-package app
+package routes
 
 import (
 	"encoding/json"
@@ -6,11 +6,14 @@ import (
 	"net/http"
 
 	"github.com/arteev/er-task/src/model"
+	"github.com/arteev/er-task/src/storage"
+	"github.com/gorilla/context"
 )
 
 //TODO: test StatsByModel
-func (a *App) StatsByModel(w http.ResponseWriter, r *http.Request) (int, error) {
-	stats, err := a.db.GetStatsByModel()
+func StatsByModel(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
+	stats, err := db.GetStatsByModel()
 	if err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err
@@ -31,8 +34,9 @@ func (a *App) StatsByModel(w http.ResponseWriter, r *http.Request) (int, error) 
 }
 
 //TODO: test StatsByType
-func (a *App) StatsByType(w http.ResponseWriter, r *http.Request) (int, error) {
-	stats, err := a.db.GetStatsByType()
+func StatsByType(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
+	stats, err := db.GetStatsByType()
 	if err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err

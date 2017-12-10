@@ -14,8 +14,8 @@ func main() {
 		addr = eaddr
 	}
 	connection := "postgres://postgres:example@127.0.0.1/carrental?sslmode=disable"
-	if econn, ok := os.LookupEnv("POSTGRES"); ok {
-		connection = econn
+	if conn, ok := os.LookupEnv("POSTGRES"); ok {
+		connection = conn
 	}
 
 	if err := new(app.App).Run(addr, connection); err != nil {

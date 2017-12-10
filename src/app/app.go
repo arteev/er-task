@@ -6,122 +6,65 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/arteev/er-task/src/app/routes"
 	"github.com/arteev/er-task/src/cache"
 	"github.com/arteev/er-task/src/storage"
 	"github.com/arteev/er-task/src/ws"
-
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 )
 
 var templs *template.Template
 
 func init() {
-
-	//TODO: dir template from env | flags
 	var err error
-	templs, err = template.ParseGlob("templates/*")
+	templs, err = template.ParseGlob("./templates/*")
 	if err != nil {
-		///
+		//log.Fatal(err) TODO:fix it when testing
 	}
-
 }
 
 //App - Application
 type App struct {
-	db               storage.Storage
-	routes           *mux.Router
+	db storage.Storage
+	//routes           *mux.Router
 	connectionString string
-	preroutes        []route
+	preroutes        []routes.Route
 }
 
-func (a *App) init() http.Handler {
+func (a *App) cachehit(name string, hit bool) {
+	if hit {
+		log.Printf("Cache hit: %s", name)
+	} else {
+		log.Printf("Cache missing: %s", name)
+	}
+}
 
+func (a *App) initStorage() error {
 	if val, ok := os.LookupEnv("CACHE"); ok && val == "true" {
-		rs, ok := os.LookupEnv("REDIS")
-		if !ok {
+		if rs, ok := os.LookupEnv("REDIS"); !ok {
 			rs = "127.0.0.1:6379"
+		} else {
+			a.db = cache.NewCacheRedis(rs, storage.GetStorage(), a.cachehit)
 		}
-		a.db = cache.NewCacheRedis(rs, storage.GetStorage(), func(name string, hit bool) {
-			if hit {
-				log.Printf("Cache hit: %s", name)
-			} else {
-				log.Printf("Cache missing: %s", name)
-			}
-		})
 	} else {
 		a.db = storage.GetStorage()
 	}
-
 	err := a.db.Init(a.connectionString, true)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	//ADD ROUTE HERE!
-	a.preroutes = []route{
-		{
-			IsAPI:   true,
-			Path:    "/tracking/{car}/{x}/{y}",
-			Methods: []string{"PUT"},
-			Handler: ErrorHandler(a.Tracking),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/rent",
-			Methods: []string{"POST"},
-			Handler: ErrorHandler(a.Rent),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/return",
-			Methods: []string{"POST"},
-			Handler: ErrorHandler(a.Return),
-		},
+	return nil
+}
 
-		{
-			IsAPI:   true,
-			Path:    "/rentjournal",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.RentJournal),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/rentjournal/{rn}",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.RentJournal),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/cars",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.Cars),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/departments",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.Departments),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/car/{rn}",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.CarInfo),
-		},
-
-		{
-			IsAPI:   true,
-			Path:    "/stats/deps/model",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.StatsByModel),
-		},
-		{
-			IsAPI:   true,
-			Path:    "/stats/deps/type",
-			Methods: []string{"GET"},
-			Handler: ErrorHandler(a.StatsByType),
-		},
-
+func (a *App) Init() error {
+	err := a.initStorage()
+	if err != nil {
+		return err
+	}
+	a.initroutes()
+	return nil
+}
+func (a *App) initroutes() http.Handler {
+	a.preroutes = []routes.Route{
 		//render routes
 		{
 			IsAPI:   false,
@@ -139,7 +82,7 @@ func (a *App) init() http.Handler {
 			IsAPI:   false,
 			Path:    "/stats",
 			Methods: []string{"GET"},
-			Handler: a.autoReloadTemplates(a.Stats),
+			Handler: a.Stats,
 		},
 		{
 			IsAPI:   false,
@@ -158,37 +101,36 @@ func (a *App) init() http.Handler {
 	return a.regroutes()
 }
 
-func (a *App) regroutes() http.Handler {
-	a.routes = mux.NewRouter()
-	a.routes.PathPrefix("/static/").Handler(
+func (a *App) regroutes() (handler http.Handler) {
+	/*a.Routes = mux.NewRouter()
+	a.Routes.PathPrefix("/static/").Handler(
 		http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-
-	subrouter := a.routes.PathPrefix("/api/v1/").Subrouter()
-	for _, r := range a.preroutes {
+	subrouter := a.Routes.PathPrefix("/api/v1/").Subrouter()
+	regroutes := a.preroutes
+	regroutes = append(regroutes, routes.Routes...)
+	for _, r := range regroutes {
 		if r.IsAPI {
-			rnew := subrouter.HandleFunc(r.Path, r.Handler)
+			rnew := subrouter.HandleFunc(r.Path, a.ContextInit(r.Handler))
 			if len(r.Methods) != 0 {
 				rnew.Methods(r.Methods...)
 			}
 		} else {
-			a.routes.HandleFunc(r.Path, r.Handler)
+			a.Routes.HandleFunc(r.Path, a.ContextInit(r.Handler))
 		}
-
 	}
-	logroutes := handlers.LoggingHandler(os.Stdout, a.routes)
-	//http.Handle("/", logroutes)
-	return logroutes
+	logroutes := handlers.LoggingHandler(os.Stdout, a.Routes)
+	return logroutes*/
+	_, handler = routes.GetHandler(a.preroutes, a.ContextInit)
+	return
 }
 
 //Run run application. Retruns  a error when failure
 func (a *App) Run(addr, connection string) error {
-
 	a.connectionString = connection
-
-	//TODO: host from env or flag
-	//TODO: роуты в отдельный файл
-
-	err := http.ListenAndServe(addr, a.init())
-
+	err := a.Init()
+	if err != nil {
+		return err
+	}
+	err = http.ListenAndServe(addr, a.initroutes())
 	return err
 }

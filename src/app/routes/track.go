@@ -1,21 +1,20 @@
-package app
+package routes
 
 import (
 	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/arteev/er-task/src/storage"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
-//TODO: mux ?? toJSON() ????
-
 //Handler для трекинга ТС
-func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
+func Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
+	db := context.Get(r, "storage").(storage.Storage)
 	vars := mux.Vars(r)
-
 	carnum := vars["car"]
-
 	x, err := strconv.ParseFloat(vars["x"], 64)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -26,7 +25,7 @@ func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 		return http.StatusBadRequest, err
 	}
 
-	if err = a.db.Track(carnum, x, y); err != nil {
+	if err = db.Track(carnum, x, y); err != nil {
 		return http.StatusNotFound, err
 	}
 
@@ -41,7 +40,5 @@ func (a *App) Tracking(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	//	w.WriteHeader(http.StatusOK)
-	//	w.Write(b)
 	return http.StatusOK, nil
 }

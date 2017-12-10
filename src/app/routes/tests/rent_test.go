@@ -1,4 +1,4 @@
-package app
+package tests
 
 import (
 	"net/http"
@@ -17,8 +17,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
 	defer fakestorage.Done()
 
 	for _, routeTest := range []struct {
@@ -33,7 +32,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		//form values empty
 		r, _ := http.NewRequest("POST", routeTest.route, nil)
 		w := httptest.NewRecorder()
-		a.routes.ServeHTTP(w, r)
+		routes.ServeHTTP(w, r)
 		assertCodeEqual(t, "Form value not missing", http.StatusBadRequest, w.Code)
 		checkResponseJSONError(t, w.Body, `missing form body`, false)
 
@@ -41,7 +40,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		form := url.Values{}
 		r, _ = http.NewRequest("POST", routeTest.route, strings.NewReader(form.Encode()))
 		w = httptest.NewRecorder()
-		a.routes.ServeHTTP(w, r)
+		routes.ServeHTTP(w, r)
 		assertCodeEqual(t, "Form value not found", http.StatusBadRequest, w.Code)
 		checkResponseJSONError(t, w.Body, `Value not found`, true)
 
@@ -54,7 +53,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		r.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 		w = httptest.NewRecorder()
-		a.routes.ServeHTTP(w, r)
+		routes.ServeHTTP(w, r)
 		//Invoked
 		if !*routeTest.invoked {
 			t.Errorf("Must be invoke Storage.%s", routeTest.name)
@@ -75,7 +74,7 @@ func TestRentAndReturnAPI(t *testing.T) {
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		r.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 		w = httptest.NewRecorder()
-		a.routes.ServeHTTP(w, r)
+		routes.ServeHTTP(w, r)
 		assertCodeEqual(t, routeTest.name, http.StatusOK, w.Code)
 		checkResponseJSONMessage(t, w.Body, `success`, false)
 		if rentok := fakestorage.existsRent(car.Regnum, dep.Name, agn, routeTest.name); !rentok {

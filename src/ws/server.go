@@ -100,7 +100,10 @@ func (s *server) run() {
 
 		case n := <-s.notify:
 			//Уведомление от хранилища
-			nws := storage.RentDataFromStorage(n)
+			nws, err := storage.RentDataFromStorage(n)
+			if err != nil {
+				log.Printf("Could not cast pares notify storage:%v,", err)
+			}
 			go func() {
 				b, _ := json.Marshal(nws)
 				s.Broadcast(b)

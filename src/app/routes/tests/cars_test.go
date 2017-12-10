@@ -1,4 +1,4 @@
-package app
+package tests
 
 import (
 	"encoding/json"
@@ -16,16 +16,16 @@ func TestCarInfo(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
 	defer fakestorage.Done()
+
 	md := fakestorage.addmodel(1, "bmw")
 	fakestorage.addcar(1, "XXX", md)
 
 	//Invoked
 	r, _ := http.NewRequest("GET", "/api/v1/car/0", nil)
 	w := httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusInternalServerError, w.Code)
 	if !fakestorage.invokedCarInfo {
 		t.Error("Must be invoke Storage.CarInfo")
@@ -33,7 +33,7 @@ func TestCarInfo(t *testing.T) {
 
 	r, _ = http.NewRequest("GET", "/api/v1/car/XXX", nil)
 	w = httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	ci := &model.CarInfoResponse{}
 	err := json.Unmarshal(w.Body.Bytes(), ci)
@@ -54,14 +54,14 @@ func TestCars(t *testing.T) {
 		fakestorage = initFakeStorage().(*FakeStorage)
 		return fakestorage
 	}
-	a := new(App)
-	a.init()
+	routes := GetRoutes(storage.GetStorage())
+
 	defer fakestorage.Done()
 	md := fakestorage.addmodel(1, "bmw")
 	car := fakestorage.addcar(1, "XXX", md)
 	r, _ := http.NewRequest("GET", "/api/v1/cars", nil)
 	w := httptest.NewRecorder()
-	a.routes.ServeHTTP(w, r)
+	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "", http.StatusOK, w.Code)
 	//Invoked
 	if !fakestorage.invokedCars {

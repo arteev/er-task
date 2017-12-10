@@ -1,4 +1,4 @@
-package app
+package routes
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-//todo: как сделать в mux?
 func ErrorHandler(fn func(http.ResponseWriter, *http.Request) (int, error)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		status, err := fn(w, r)
