@@ -24,7 +24,7 @@ func TestRentJournal(t *testing.T) {
 	md := fakestorage.addmodel(1, "bmw")
 	car := fakestorage.addcar(1, "X000XX", md)
 	agn := "000-000-000 01"
-	err := fakestorage.Rent(car.Regnum, dep.Name, agn)
+	_, err := fakestorage.Rent(car.Regnum, dep.Name, agn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestRentJournal(t *testing.T) {
 	}
 	//second car
 	car2 := fakestorage.addcar(2, "X002XX", md)
-	err = fakestorage.Rent(car2.Regnum, dep.Name, agn)
+	_, err = fakestorage.Rent(car2.Regnum, dep.Name, agn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestRentJournalByRNCar(t *testing.T) {
 	md := fakestorage.addmodel(1, "bmw")
 	car := fakestorage.addcar(1, "X000XX", md)
 	agn := "000-000-000 01"
-	err := fakestorage.Rent(car.Regnum, dep.Name, agn)
+	_, err := fakestorage.Rent(car.Regnum, dep.Name, agn)
 	if err != nil {
 		t.Fatal(err)
 	}

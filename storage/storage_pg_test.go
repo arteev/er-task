@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/arteev/er-task/model"
@@ -10,6 +11,12 @@ import (
 
 //TODO: брать из env
 var pgConnectionTest = "postgres://postgres:example@127.0.0.1/carrental?sslmode=disable"
+
+func init() {
+	if c, ok := os.LookupEnv("POSTGRES"); ok {
+		pgConnectionTest = c
+	}
+}
 
 func setUp(t *testing.T) Storage {
 	t.Helper()
@@ -191,12 +198,12 @@ func TestRentPg(t *testing.T) {
 	defer tearDown(spg, t)
 
 	//see:setUp
-	err := s.Rent("000", "dep1", "000-000-000 01")
+	_, err := s.Rent("000", "dep1", "000-000-000 01")
 	if err == nil {
 		t.Error("Expected error")
 	}
 	car := addCar(spg, 1, t)
-	err = s.Rent(car.Regnum, "dep1", "000-000-000 01")
+	_, err = s.Rent(car.Regnum, "dep1", "000-000-000 01")
 	if err != nil {
 		t.Error(err)
 	}
@@ -204,7 +211,7 @@ func TestRentPg(t *testing.T) {
 		t.Error("Data not found for rent")
 	}
 
-	err = s.Return(car.Regnum, "dep1", "000-000-000 01")
+	_, err = s.Return(car.Regnum, "dep1", "000-000-000 01")
 	if err != nil {
 		t.Error(err)
 	}
@@ -238,7 +245,7 @@ func TestRentPg(t *testing.T) {
 
 	//GetRentJornal by car RN
 	car2 := addCar(spg, 2, t)
-	err = s.Rent(car2.Regnum, "dep1", "000-000-000 01")
+	_, err = s.Rent(car2.Regnum, "dep1", "000-000-000 01")
 	if err != nil {
 		t.Error(err)
 	}
@@ -337,7 +344,7 @@ func TestGetCarInfo(t *testing.T) {
 	}
 	//rent
 	agnname := "000-000-000 01"
-	err = s.Rent(car.Regnum, "dep1", agnname)
+	_, err = s.Rent(car.Regnum, "dep1", agnname)
 	if err != nil {
 		t.Error(err)
 	}
