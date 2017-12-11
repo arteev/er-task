@@ -74,10 +74,17 @@ var Routes = []Route{
 	},
 	{
 		IsAPI:   true,
-		Path:    "/tracking/{car}/{x}/{y}",
+		Path:    "/track/{car}/{x}/{y}",
 		Methods: []string{"PUT"},
 		Handler: JSONHandler(Tracking),
 	},
+	{
+		IsAPI:   true,
+		Path:    "/trackexp/{car}/{x}/{y}",
+		Methods: []string{"PUT"},
+		Handler: JSONHandler(TrackingExp),
+	},
+
 	//render
 	{
 		IsAPI:   false,
