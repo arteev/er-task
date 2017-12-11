@@ -14,4 +14,4 @@ for container_id in $(docker ps --filter='ancestor=postgres' -q)
 echo "Creating sample database...DONE"
 
 #scale 
-#docker-compose -f demo.yml scale web=3
+docker-compose -f demo.yml scale web=3

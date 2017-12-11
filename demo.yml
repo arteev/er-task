@@ -19,13 +19,11 @@ services:
       environment:
         POSTGRES: "postgres://postgres:example@db/carrental?sslmode=disable"
         REDIS: "redis:6379"
-        CACHE: "true"
       links:
         - db
-      #ports:
-      # - "8082:8082"
+        - redis
       expose:
-        - '8082'
+       - '8080'
     
     balancer:
       image: dockercloud/haproxy

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	addr := ":8082"
+	addr := ":8080"
 	if eaddr, ok := os.LookupEnv("APPADDR"); ok {
 		addr = eaddr
 	}
