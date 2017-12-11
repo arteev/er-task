@@ -18,13 +18,13 @@ func TestTrackAPI(t *testing.T) {
 	defer fakestorage.Done()
 
 	//invalid path(Variables empty)
-	r, _ := http.NewRequest("PUT", "/api/v1/tracking/0/0", nil)
+	r, _ := http.NewRequest("PUT", "/api/v1/track/0/0", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "invalid path", http.StatusNotFound, w.Code)
 
 	//car not found
-	r, _ = http.NewRequest("PUT", "/api/v1/tracking/0/55.755/37.6251", nil)
+	r, _ = http.NewRequest("PUT", "/api/v1/track/0/55.755/37.6251", nil)
 	w = httptest.NewRecorder()
 	routes.ServeHTTP(w, r)
 	//Invoked
@@ -36,7 +36,7 @@ func TestTrackAPI(t *testing.T) {
 	checkResponseJSONError(t, w.Body, `Car 0 not found`, false)
 
 	//tracking the car
-	r, _ = http.NewRequest("PUT", "/api/v1/tracking/1/55.755/37.6251", nil)
+	r, _ = http.NewRequest("PUT", "/api/v1/track/1/55.755/37.6251", nil)
 	w = httptest.NewRecorder()
 	routes.ServeHTTP(w, r)
 	assertCodeEqual(t, "Expected:Success", http.StatusOK, w.Code)
