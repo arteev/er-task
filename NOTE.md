@@ -138,7 +138,7 @@ dept;agent
 
 * ```go get -uv github.com/arteev/er-task```
 
-* в каталоге приложения $GOPATH/arteev/er-task: ```make```
+* в каталоге приложения $GOPATH/src/github.com/arteev/er-task: ```make```
 
 * ```./demo```
 
